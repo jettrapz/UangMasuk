@@ -127,14 +127,24 @@ const SuperAdminView = (() => {
     }
 
     async function renderChart() {
-      const months = await DB.groupByMonth(); // urut ASC, cocok untuk grafik garis
-      const labels = months.map((m) => DB.monthLabel(m.key));
-      const nominalData = months.map((m) => m.totalNominal);
-      const okupansiData = months.map((m) => m.totalOkupansi);
+      // Pengecekan aman jika library Chart.js belum sepenuhnya siap dimuat
+      if (!window.Chart) {
+        console.warn("Chart.js belum dimuat, menunda rendering...");
+        setTimeout(renderChart, 100);
+        return;
+      }
+
+      const months = await DB.groupByMonth(); // Mengambil data asinkron dari database MySQL
+      const labels = months.length ? months.map((m) => DB.monthLabel(m.key)) : ["Belum ada data"];
+      const nominalData = months.length ? months.map((m) => m.totalNominal) : [0];
+      const okupansiData = months.length ? months.map((m) => m.totalOkupansi) : [0];
 
       const canvas = document.getElementById("trendChart");
       const chartEmpty = document.getElementById("chartEmptyState");
-      if (!months.length) {
+
+      if (!canvas) return;
+
+      if (!months.length && chartEmpty) {
         canvas.classList.add("hidden");
         chartEmpty.classList.remove("hidden");
         if (chartInstance) {
@@ -143,8 +153,9 @@ const SuperAdminView = (() => {
         }
         return;
       }
+
+      if (chartEmpty) chartEmpty.classList.add("hidden");
       canvas.classList.remove("hidden");
-      chartEmpty.classList.add("hidden");
 
       const ctx = canvas.getContext("2d");
       if (chartInstance) chartInstance.destroy();
@@ -152,37 +163,51 @@ const SuperAdminView = (() => {
       chartInstance = new Chart(ctx, {
         type: "line",
         data: {
-          labels,
+          labels: labels,
           datasets: [
             {
               label: "Pendapatan (Rp)",
               data: nominalData,
-              borderColor: "#e8ac52",
-              backgroundColor: "rgba(232,172,82,.12)",
+              borderColor: "#ff527b",
+              backgroundColor: "rgba(255, 82, 123, 0.2)",
               yAxisID: "y",
-              tension: 0.35,
-              fill: true,
+              tension: 0,        // <-- Wajib 0 agar garisnya bersudut tajam (tidak melengkung)
+              fill: false,       // Tanpa arsiran
               pointRadius: 4,
-              pointBackgroundColor: "#e8ac52",
+              pointBackgroundColor: "#ff527b",
+              borderWidth: 2,
             },
             {
               label: "Okupansi (jam)",
               data: okupansiData,
               borderColor: "#35b3a3",
-              backgroundColor: "rgba(53,179,163,.12)",
+              backgroundColor: "rgba(53, 179, 163, 0.2)",
               yAxisID: "y1",
-              tension: 0.35,
-              fill: true,
+              tension: 0,        // <-- Wajib 0 agar garisnya bersudut tajam
+              fill: false,       // Tanpa arsiran
               pointRadius: 4,
               pointBackgroundColor: "#35b3a3",
+              borderWidth: 2,
             },
-          ],
+          ]
         },
         options: {
           responsive: true,
-          interaction: { mode: "index", intersect: false },
+          maintainAspectRatio: false,
           plugins: {
-            legend: { display: false },
+            filler: {
+              propagate: false,
+            },
+            title: {
+              display: false,
+              text: "Tren Bulanan — Pendapatan & Okupansi",
+              color: "#96a5b3",
+              font: { size: 13, weight: "600" }
+            },
+            legend: {
+              display: true,
+              position: "top"
+            },
             tooltip: {
               backgroundColor: "#1a222b",
               borderColor: "#2c3945",
@@ -192,23 +217,37 @@ const SuperAdminView = (() => {
               padding: 10,
               callbacks: {
                 label: (item) => {
-                  if (item.dataset.yAxisID === "y") return " Pendapatan: " + formatRupiah(item.raw);
+                  if (!months.length) return " Belum ada data transaksi";
+                  if (item.dataset.yAxisID === "y") {
+                    return " Pendapatan: " + formatRupiah(item.raw);
+                  }
                   return " Okupansi: " + formatJam(item.raw);
                 },
               },
             },
           },
           scales: {
-            x: { grid: { color: "#232e39" }, ticks: { color: "#96a5b3" } },
+            x: {
+              grid: { color: "#232e39" },
+              ticks: { color: "#96a5b3" },
+            },
             y: {
               position: "left",
+              min: 0, // Dimulai dari 0 agar data nominal terbaca dengan benar
               grid: { color: "#232e39" },
-              ticks: { color: "#96a5b3", callback: (v) => "Rp " + v.toLocaleString("id-ID") },
+              ticks: {
+                color: "#96a5b3",
+                callback: (v) => "Rp " + v.toLocaleString("id-ID"), // Format rupiah kembali aktif
+              },
             },
             y1: {
               position: "right",
+              min: 0, // Dimulai dari 0 untuk jam okupansi
               grid: { display: false },
-              ticks: { color: "#96a5b3", callback: (v) => v + " jam" },
+              ticks: {
+                color: "#96a5b3",
+                callback: (v) => v + " jam" // Format jam kembali aktif
+              },
             },
           },
         },
@@ -246,10 +285,9 @@ const SuperAdminView = (() => {
           t.jenisTransfer === "Qris" ? "tag-qris" : t.jenisTransfer === "Transfer" ? "tag-transfer" : "tag-cash";
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${
-            t.gambarBukti
-              ? `<img src="${t.gambarBukti}" class="thumb" data-img="${t.gambarBukti}" alt="Bukti transfer" />`
-              : `<div class="thumb-empty">—</div>`
+          <td>${t.gambarBukti
+            ? `<img src="${t.gambarBukti}" class="thumb" data-img="${t.gambarBukti}" alt="Bukti transfer" />`
+            : `<div class="thumb-empty">—</div>`
           }</td>
           <td>${escapeHtml(t.nama)}</td>
           <td>${formatTanggal(t.tanggalMain)}</td>
