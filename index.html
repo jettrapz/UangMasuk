@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ledger — Catatan Uang Masuk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- =========================================================
+     SCREEN 1 — Landing (pilih peran)
+     ========================================================= -->
+<div id="screen-landing" class="screen">
+  <div class="landing">
+    <div class="landing-inner">
+      <div class="eyebrow">Sistem Pencatatan Transaksi</div>
+      <h1>Ledger</h1>
+      <p class="lead">Catat uang masuk beserta bukti transfer, lalu pantau okupansi &amp; pendapatan bulanan lewat dashboard super admin.</p>
+
+      <div class="role-grid">
+        <a class="role-card" href="#/admin">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M12 5v14M5 12h14"/></svg>
+          </div>
+          <h3>Masuk sebagai Admin</h3>
+          <p>Input transaksi baru, unggah bukti transfer, dan ekspor data ke spreadsheet.</p>
+          <span class="go">Buka halaman input →</span>
+        </a>
+
+        <a class="role-card" href="#/superadmin">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M4 19V9M12 19V5M20 19v-7"/></svg>
+          </div>
+          <h3>Masuk sebagai Super Admin</h3>
+          <p>Lihat dashboard, rekap per bulan, total okupansi, dan grafik tren.</p>
+          <span class="go">Buka dashboard →</span>
+        </a>
+      </div>
+
+      <p class="footnote">Data tersimpan otomatis &amp; persisten. Admin dan Super Admin berbagi data yang sama secara real-time.</p>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     SCREEN 2 — Admin
+     ========================================================= -->
+<div id="screen-admin" class="screen hidden">
+
+  <div class="gate" id="gateAdmin">
+    <div class="gate-card">
+      <div class="brand">
+        <div class="brand-mark">A</div>
+        <div class="brand-text">
+          <div class="name">Ledger</div>
+          <div class="role">Login Admin</div>
+        </div>
+      </div>
+      <h2>Masuk sebagai Admin</h2>
+      <p class="desc">Masukkan kata sandi admin untuk mulai mencatat transaksi.</p>
+      <form id="adminLoginForm">
+        <div class="field">
+          <label for="adminPw">Kata sandi</label>
+          <input type="password" id="adminPw" class="input" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <div class="gate-error" id="adminGateError"></div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Masuk</button>
+      </form>
+      <p class="footnote" style="margin-top:16px;">Demo password: <span class="mono">admin123</span></p>
+      <p class="footnote"><a href="#/">← Kembali ke beranda</a></p>
+    </div>
+  </div>
+
+  <div class="app-shell hidden" id="appAdmin">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">A</div>
+        <div class="brand-text">
+          <div class="name">Ledger</div>
+          <div class="role">Admin</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <div class="nav-group-label">Menu</div>
+        <a href="#/admin" class="active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          Input Transaksi
+        </a>
+        <a href="#/superadmin">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V9M12 19V5M20 19v-7"/></svg>
+          Dashboard Super Admin
+        </a>
+      </nav>
+      <div class="sidebar-foot">
+        <button class="btn btn-ghost btn-sm" id="adminLogoutBtn" style="width:100%;">Keluar</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <div class="eyebrow">Admin</div>
+          <h1>Input Uang Masuk</h1>
+          <p class="sub">Catat transaksi baru lengkap dengan bukti transfer dan data okupansi.</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn btn-teal" id="adminExportBtn">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+            Ekspor ke Spreadsheet
+          </button>
+        </div>
+      </div>
+
+      <!-- ---- Form Input ---- -->
+      <div class="card" style="margin-bottom:22px;" id="formCard">
+        <div class="card-title">Form Transaksi</div>
+
+        <div class="edit-banner hidden" id="editBanner">
+          <span id="editBannerText"></span>
+          <button type="button" class="btn btn-ghost btn-sm" id="cancelEditBtn">Batal Edit</button>
+        </div>
+
+        <form id="txForm">
+          <div class="form-grid">
+            <div class="field">
+              <label for="nama">Nama</label>
+              <input type="text" id="nama" class="input" placeholder="Nama pelanggan" required />
+            </div>
+
+            <div class="field">
+              <label for="tanggalMain">Tanggal Main</label>
+              <input type="date" id="tanggalMain" class="input" required />
+            </div>
+
+            <div class="field">
+              <label>Jenis Transfer</label>
+              <div class="radio-row" id="jenisTransferGroup">
+                <label class="radio-chip">
+                  <input type="radio" name="jenisTransfer" value="Qris" checked />
+                  <span>QRIS</span>
+                </label>
+                <label class="radio-chip">
+                  <input type="radio" name="jenisTransfer" value="Transfer" />
+                  <span>Transfer</span>
+                </label>
+                <label class="radio-chip">
+                  <input type="radio" name="jenisTransfer" value="Cash" />
+                  <span>Cash</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="tanggalTransfer">Tanggal Transfer</label>
+              <input type="date" id="tanggalTransfer" class="input" required />
+            </div>
+
+            <div class="field">
+              <label for="nominal">Nominal (Rp)</label>
+              <input type="number" id="nominal" class="input" placeholder="mis. 150000" min="0" required />
+            </div>
+
+            <div class="field">
+              <label for="jamMulai">Jam Mulai</label>
+              <input type="time" id="jamMulai" class="input" required />
+            </div>
+
+            <div class="field">
+              <label for="jamSelesai">Jam Selesai</label>
+              <input type="time" id="jamSelesai" class="input" required />
+            </div>
+
+            <div class="field">
+              <label>Okupansi (otomatis)</label>
+              <div class="computed-box" id="durasiPreview">Isi jam mulai &amp; jam selesai untuk menghitung durasi otomatis.</div>
+            </div>
+
+            <div class="field full">
+              <label for="catatan">Catatan</label>
+              <textarea id="catatan" class="input" placeholder="Catatan tambahan (opsional)"></textarea>
+            </div>
+
+            <div class="field full">
+              <label>Bukti Transfer</label>
+              <div class="upload-box" id="uploadBox">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4m0 0L7 9m5-5l5 5"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
+                <div class="txt">Klik untuk unggah gambar bukti transfer (JPG/PNG, maks 4MB)</div>
+              </div>
+              <input type="file" id="fileInput" accept="image/*" class="hidden" />
+              <div id="previewWrap">
+                <img id="previewImg" src="" alt="Preview bukti transfer" />
+                <button type="button" class="remove-img" id="removeImgBtn">Hapus gambar</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="reset" class="btn btn-ghost">Bersihkan</button>
+            <button type="submit" class="btn btn-primary" id="submitBtn">Simpan Transaksi</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ---- Riwayat Transaksi ---- -->
+      <div class="card">
+        <div class="card-title">Riwayat Transaksi</div>
+        <div class="toolbar">
+          <input type="text" id="searchInput" class="input grow" placeholder="Cari nama atau catatan..." />
+          <select id="filterJenis" class="input">
+            <option value="">Semua Jenis</option>
+            <option value="Qris">QRIS</option>
+            <option value="Transfer">Transfer</option>
+            <option value="Cash">Cash</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Bukti</th>
+                <th>Nama</th>
+                <th>Tgl Main</th>
+                <th>Jenis</th>
+                <th>Tgl Transfer</th>
+                <th>Nominal</th>
+                <th>Jam / Okupansi</th>
+                <th>Catatan</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="txTableBody"></tbody>
+          </table>
+        </div>
+        <div id="emptyState" class="empty-state hidden">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          <div>Belum ada transaksi yang cocok.</div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- =========================================================
+     SCREEN 3 — Super Admin
+     ========================================================= -->
+<div id="screen-superadmin" class="screen hidden">
+
+  <div class="gate" id="gateSuper">
+    <div class="gate-card">
+      <div class="brand">
+        <div class="brand-mark">S</div>
+        <div class="brand-text">
+          <div class="name">Ledger</div>
+          <div class="role">Login Super Admin</div>
+        </div>
+      </div>
+      <h2>Masuk sebagai Super Admin</h2>
+      <p class="desc">Masukkan kata sandi untuk membuka dashboard rekap.</p>
+      <form id="superLoginForm">
+        <div class="field">
+          <label for="superPw">Kata sandi</label>
+          <input type="password" id="superPw" class="input" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <div class="gate-error" id="superGateError"></div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Masuk</button>
+      </form>
+      <p class="footnote" style="margin-top:16px;">Demo password: <span class="mono">super123</span></p>
+      <p class="footnote"><a href="#/">← Kembali ke beranda</a></p>
+    </div>
+  </div>
+
+  <div class="app-shell hidden" id="appSuper">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">S</div>
+        <div class="brand-text">
+          <div class="name">Ledger</div>
+          <div class="role">Super Admin</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <div class="nav-group-label">Menu</div>
+        <a href="#/admin">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          Input Transaksi
+        </a>
+        <a href="#/superadmin" class="active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V9M12 19V5M20 19v-7"/></svg>
+          Dashboard Super Admin
+        </a>
+      </nav>
+      <div class="sidebar-foot">
+        <button class="btn btn-ghost btn-sm" id="superLogoutBtn" style="width:100%;">Keluar</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <div class="eyebrow">Super Admin</div>
+          <h1>Dashboard Rekap</h1>
+          <p class="sub">Ringkasan pendapatan &amp; okupansi, per bulan maupun keseluruhan.</p>
+        </div>
+        <div class="topbar-actions">
+          <select id="monthFilter" class="input"></select>
+          <button class="btn btn-teal" id="superExportBtn">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+            Ekspor ke Spreadsheet
+          </button>
+        </div>
+      </div>
+
+      <!-- ---- Stat cards ---- -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Transaksi</div>
+          <div class="stat-value" id="statCount">0</div>
+          <div class="stat-note" id="statCountNote">Sepanjang waktu</div>
+        </div>
+        <div class="stat-card teal">
+          <div class="stat-label">Total Pendapatan</div>
+          <div class="stat-value" id="statNominal">Rp 0</div>
+          <div class="stat-note" id="statNominalNote">Sepanjang waktu</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Okupansi</div>
+          <div class="stat-value" id="statOkupansi">0 jam</div>
+          <div class="stat-note" id="statOkupansiNote">Jam bermain terekam</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Rata-rata / Transaksi</div>
+          <div class="stat-value" id="statRata">Rp 0</div>
+          <div class="stat-note">Nominal rata-rata</div>
+        </div>
+      </div>
+
+      <!-- ---- Grafik garis ---- -->
+      <div class="card chart-card" style="margin-bottom:20px;">
+        <div class="card-title">Tren Bulanan — Pendapatan &amp; Okupansi</div>
+        <canvas id="trendChart" height="90"></canvas>
+        <div class="empty-state hidden" id="chartEmptyState">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18M8 17V9m4 8V5m4 12v-6"/></svg>
+          <div>Belum ada data untuk ditampilkan. Grafik akan muncul otomatis setelah ada transaksi.</div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><span class="legend-dot" style="background:#e8ac52;"></span> Pendapatan (Rp)</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#35b3a3;"></span> Okupansi (jam)</div>
+        </div>
+      </div>
+
+      <!-- ---- Rekap per bulan ---- -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-title">Rekap Per Bulan</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Bulan</th>
+                <th>Jumlah Transaksi</th>
+                <th>Total Nominal</th>
+                <th>Total Okupansi</th>
+                <th>Rata-rata / Transaksi</th>
+              </tr>
+            </thead>
+            <tbody id="monthlyTableBody"></tbody>
+          </table>
+        </div>
+        <div id="emptyStateMonthly" class="empty-state hidden">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18M8 17V9m4 8V5m4 12v-6"/></svg>
+          <div>Belum ada data transaksi. Silakan input lewat halaman Admin.</div>
+        </div>
+      </div>
+
+      <!-- ---- Detail transaksi + bukti transfer ---- -->
+      <div class="card">
+        <div class="card-title">Detail Transaksi &amp; Bukti Transfer</div>
+        <div class="toolbar">
+          <input type="text" id="searchDetail" class="input grow" placeholder="Cari nama atau catatan..." />
+          <select id="filterJenisDetail" class="input">
+            <option value="">Semua Jenis</option>
+            <option value="Qris">QRIS</option>
+            <option value="Transfer">Transfer</option>
+            <option value="Cash">Cash</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Bukti</th>
+                <th>Nama</th>
+                <th>Tgl Main</th>
+                <th>Jenis</th>
+                <th>Tgl Transfer</th>
+                <th>Nominal</th>
+                <th>Jam</th>
+                <th>Okupansi</th>
+              </tr>
+            </thead>
+            <tbody id="detailTableBody"></tbody>
+          </table>
+        </div>
+        <div id="emptyStateDetail" class="empty-state hidden">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          <div>Belum ada transaksi yang cocok.</div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Lightbox bersama untuk lihat bukti transfer (dipakai Admin & Super Admin) -->
+<div class="lightbox" id="lightbox">
+  <button class="close-lb" id="closeLightbox">Tutup ✕</button>
+  <img id="lightboxImg" src="" alt="Bukti transfer" />
+</div>
+
+<script src="js/storage.js"></script>
+<script src="js/router.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
