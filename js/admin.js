@@ -299,10 +299,9 @@ const AdminView = (() => {
           t.jenisTransfer === "Qris" ? "tag-qris" : t.jenisTransfer === "Transfer" ? "tag-transfer" : "tag-cash";
 
         tr.innerHTML = `
-          <td>${
-            t.gambarBukti
-              ? `<img src="${t.gambarBukti}" class="thumb" data-img="${t.gambarBukti}" alt="Bukti" />`
-              : `<div class="thumb-empty">—</div>`
+          <td>${t.gambarBukti
+            ? `<img src="${t.gambarBukti}" class="thumb" data-img="${t.gambarBukti}" alt="Bukti" />`
+            : `<div class="thumb-empty">—</div>`
           }</td>
           <td>${escapeHtml(t.nama)}</td>
           <td>${formatTanggal(t.tanggalMain)}</td>
@@ -353,37 +352,50 @@ const AdminView = (() => {
     filterJenis.addEventListener("change", renderTable);
 
     /* ---------------- Ekspor spreadsheet ---------------- */
+    /* ---------------- Ekspor spreadsheet ---------------- */
     exportBtn.addEventListener("click", async () => {
       const data = await DB.getAll();
       if (!data.length) {
         showToast("Belum ada data untuk diekspor.", "err");
         return;
       }
-      const rows = data.map((t) => ({
-        Nama: t.nama,
-        "Tanggal Main": t.tanggalMain,
-        "Jenis Transfer": t.jenisTransfer,
-        "Tanggal Transfer": t.tanggalTransfer,
-        Nominal: t.nominal,
-        "Jam Mulai": t.jamMulai,
-        "Jam Selesai": t.jamSelesai,
-        "Okupansi (jam)": t.okupansiJam,
-        Catatan: t.catatan,
-        "Ada Bukti Transfer": t.gambarBukti ? "Ya" : "Tidak",
-      }));
+
+      const rows = data.map((t) => {
+        // Format jam main agar menjadi seperti "07.00 - 09.00"
+        const jamMain = (t.jamMulai && t.jamSelesai)
+          ? `${t.jamMulai} - ${t.jamSelesai}`
+          : (t.jamMulai || t.jamSelesai || "-");
+
+        return {
+          "ATAS NAMA / KOMUNITAS": t.nama,
+          "TGL/BULAN MAIN": t.tanggalMain,
+          "JAM MAIN": jamMain,
+          "PEMBAYARAN": t.jenisTransfer, // Memuat data seperti "Transfer", dll.
+          "TGL PEMBAYARAN": t.tanggalTransfer,
+          "NOMINAL": t.nominal,
+          "NOTE": t.catatan
+        };
+      });
+
       const ws = XLSX.utils.json_to_sheet(rows);
+
+      // Menyesuaikan lebar kolom untuk 7 field di atas
       ws["!cols"] = [
-        { wch: 20 }, { wch: 14 }, { wch: 14 }, { wch: 16 },
-        { wch: 14 }, { wch: 10 }, { wch: 10 }, { wch: 14 },
-        { wch: 30 }, { wch: 16 },
+        { wch: 25 }, // A: ATAS NAMA / KOMUNITAS
+        { wch: 18 }, // B: TGL/BULAN MAIN
+        { wch: 15 }, // C: JAM MAIN
+        { wch: 15 }, // D: PEMBAYARAN
+        { wch: 18 }, // E: TGL PEMBAYARAN
+        { wch: 15 }, // F: NOMINAL
+        { wch: 40 }, // G: NOTE
       ];
+
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Transaksi");
       const filename = `transaksi-uang-masuk-${new Date().toISOString().slice(0, 10)}.xlsx`;
       XLSX.writeFile(wb, filename);
       showToast("Berhasil diekspor ke spreadsheet.", "ok");
     });
-
     function escapeHtml(str) {
       const div = document.createElement("div");
       div.textContent = str || "";

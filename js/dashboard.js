@@ -322,38 +322,29 @@ const SuperAdminView = (() => {
         return;
       }
 
-      const rekapRows = months.map((m) => ({
-        Bulan: DB.monthLabel(m.key),
-        "Jumlah Transaksi": m.count,
-        "Total Nominal": m.totalNominal,
-        "Total Okupansi (jam)": m.totalOkupansi,
-        "Rata-rata / Transaksi": m.count ? Math.round(m.totalNominal / m.count) : 0,
-      }));
+      const rows = (await DB.getAll()).map((t) => {
+        const jamMain = (t.jamMulai && t.jamSelesai)
+          ? `${t.jamMulai} - ${t.jamSelesai}`
+          : (t.jamMulai || t.jamSelesai || "-");
 
-      const detailRows = (await DB.getAll()).map((t) => ({
-        Nama: t.nama,
-        "Tanggal Main": t.tanggalMain,
-        "Jenis Transfer": t.jenisTransfer,
-        "Tanggal Transfer": t.tanggalTransfer,
-        Nominal: t.nominal,
-        "Jam Mulai": t.jamMulai,
-        "Jam Selesai": t.jamSelesai,
-        "Okupansi (jam)": t.okupansiJam,
-        Catatan: t.catatan,
-        "Ada Bukti Transfer": t.gambarBukti ? "Ya" : "Tidak",
-      }));
+        return {
+          "ATAS NAMA / KOMUNITAS": t.nama,
+          "TGL/BULAN MAIN": t.tanggalMain,
+          "JAM MAIN": jamMain,
+          "PEMBAYARAN": t.jenisTransfer,
+          "TGL PEMBAYARAN": t.tanggalTransfer,
+          "NOMINAL": t.nominal,
+          "NOTE": t.catatan,
+        };
+      });
 
       const wb = XLSX.utils.book_new();
-      const wsRekap = XLSX.utils.json_to_sheet(rekapRows);
-      wsRekap["!cols"] = [{ wch: 14 }, { wch: 16 }, { wch: 16 }, { wch: 18 }, { wch: 18 }];
-      XLSX.utils.book_append_sheet(wb, wsRekap, "Rekap Bulanan");
-
-      const wsDetail = XLSX.utils.json_to_sheet(detailRows);
-      wsDetail["!cols"] = [
-        { wch: 20 }, { wch: 14 }, { wch: 14 }, { wch: 16 }, { wch: 14 },
-        { wch: 10 }, { wch: 10 }, { wch: 14 }, { wch: 30 }, { wch: 16 },
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws["!cols"] = [
+        { wch: 25 }, { wch: 18 }, { wch: 15 }, { wch: 15 },
+        { wch: 18 }, { wch: 15 }, { wch: 40 },
       ];
-      XLSX.utils.book_append_sheet(wb, wsDetail, "Detail Transaksi");
+      XLSX.utils.book_append_sheet(wb, ws, "Transaksi");
 
       const filename = `dashboard-rekap-${new Date().toISOString().slice(0, 10)}.xlsx`;
       XLSX.writeFile(wb, filename);
