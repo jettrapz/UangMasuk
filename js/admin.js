@@ -377,7 +377,23 @@ const AdminView = (() => {
         };
       });
 
-      const ws = XLSX.utils.json_to_sheet(rows);
+      const ws = XLSX.utils.json_to_sheet(rows, { origin: "A5" });
+      XLSX.utils.sheet_add_aoa(ws, [["Pembayaran Lapangan dan Coaching ke Rekening PT Adinata Perkasa Utama"]], { origin: "A1" });
+      ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
+      ws["A1"].s = {
+        font: { bold: true, sz: 14, color: { rgb: "000000" } },
+        alignment: { horizontal: "center", vertical: "center" },
+      };
+      const headerStyle = {
+        fill: { patternType: "solid", fgColor: { rgb: "70AD47" } },
+        font: { bold: true, color: { rgb: "FFFFFF" } },
+        alignment: { horizontal: "center", vertical: "center" },
+      };
+      Object.keys(rows[0]).forEach((_, index) => {
+        const cell = XLSX.utils.encode_cell({ r: 4, c: index });
+        ws[cell].s = headerStyle;
+      });
+      ws["!rows"] = [{ hpt: 24 }, {}, {}, {}, { hpt: 32 }];
 
       // Menyesuaikan lebar kolom untuk 7 field di atas
       ws["!cols"] = [
