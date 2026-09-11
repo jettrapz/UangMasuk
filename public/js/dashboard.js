@@ -1,0 +1,381 @@
+/* =========================================================
+   dashboard.js — logic tampilan Super Admin (SuperAdminView)
+   ========================================================= */
+
+const SuperAdminView = (() => {
+  const ROLE = "superadmin";
+  let bound = false;
+  let chartInstance = null;
+
+  function init() {
+    if (bound) return;
+    bound = true;
+
+    const gateEl = document.getElementById("gateSuper");
+    const appEl = document.getElementById("appSuper");
+    const loginForm = document.getElementById("superLoginForm");
+    const pwInput = document.getElementById("superPw");
+    const gateError = document.getElementById("superGateError");
+    const logoutBtn = document.getElementById("superLogoutBtn");
+
+    const monthFilter = document.getElementById("monthFilter");
+    const exportBtn = document.getElementById("superExportBtn");
+    const searchDetail = document.getElementById("searchDetail");
+    const filterJenisDetail = document.getElementById("filterJenisDetail");
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImg = document.getElementById("lightboxImg");
+
+    function refreshGateVisibility() {
+      const loggedIn = AUTH.isLoggedIn(ROLE);
+      gateEl.classList.toggle("hidden", loggedIn);
+      appEl.classList.toggle("hidden", !loggedIn);
+      return loggedIn;
+    }
+
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (AUTH.login(ROLE, pwInput.value)) {
+        gateError.textContent = "";
+        pwInput.value = "";
+        refreshGateVisibility();
+        renderAll();
+      } else {
+        gateError.textContent = "Kata sandi salah. Coba lagi.";
+      }
+    });
+
+    logoutBtn.addEventListener("click", () => {
+      AUTH.logout(ROLE);
+      refreshGateVisibility();
+      showToast("Berhasil keluar dari akun Super Admin.", "ok");
+    });
+
+    monthFilter.addEventListener("change", renderAll);
+    searchDetail.addEventListener("input", renderDetailTable);
+    filterJenisDetail.addEventListener("change", renderDetailTable);
+    exportBtn.addEventListener("click", exportSpreadsheet);
+
+    document.getElementById("closeLightbox").addEventListener("click", () => lightbox.classList.remove("open"));
+    lightbox.addEventListener("click", (e) => {
+      if (e.target === lightbox) lightbox.classList.remove("open");
+    });
+
+    async function populateMonthFilter() {
+      const months = await DB.groupByMonth();
+      const prevValue = monthFilter.value;
+      monthFilter.innerHTML = `<option value="">Semua Bulan</option>`;
+      months
+        .slice()
+        .reverse()
+        .forEach((m) => {
+          const opt = document.createElement("option");
+          opt.value = m.key;
+          opt.textContent = DB.monthLabel(m.key);
+          monthFilter.appendChild(opt);
+        });
+      if ([...monthFilter.options].some((o) => o.value === prevValue)) {
+        monthFilter.value = prevValue;
+      }
+    }
+
+    async function renderAll() {
+      await populateMonthFilter();
+      await renderStats();
+      await renderMonthlyTable();
+      await renderChart();
+      await renderDetailTable();
+    }
+
+    async function renderStats() {
+      const key = monthFilter.value;
+      const s = await DB.summary(key || null);
+      document.getElementById("statCount").textContent = s.count;
+      document.getElementById("statNominal").textContent = formatRupiah(s.totalNominal);
+      document.getElementById("statOkupansi").textContent = formatJam(s.totalOkupansi);
+      document.getElementById("statRata").textContent = formatRupiah(s.rataRata);
+
+      const note = key ? DB.monthLabel(key) : "Sepanjang waktu";
+      document.getElementById("statCountNote").textContent = note;
+      document.getElementById("statNominalNote").textContent = note;
+      document.getElementById("statOkupansiNote").textContent = note;
+    }
+
+    async function renderMonthlyTable() {
+      const tbody = document.getElementById("monthlyTableBody");
+      const emptyState = document.getElementById("emptyStateMonthly");
+      let months = (await DB.groupByMonth()).slice().reverse();
+
+      const key = monthFilter.value;
+      if (key) months = months.filter((m) => m.key === key);
+
+      tbody.innerHTML = "";
+      emptyState.classList.toggle("hidden", months.length > 0);
+      if (!months.length) return;
+
+      months.forEach((m) => {
+        const rata = m.count ? Math.round(m.totalNominal / m.count) : 0;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${DB.monthLabel(m.key)}</td>
+          <td>${m.count}</td>
+          <td class="mono">${formatRupiah(m.totalNominal)}</td>
+          <td>${formatJam(m.totalOkupansi)}</td>
+          <td class="mono">${formatRupiah(rata)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function renderChart() {
+      // Pengecekan aman jika library Chart.js belum sepenuhnya siap dimuat
+      if (!window.Chart) {
+        console.warn("Chart.js belum dimuat, menunda rendering...");
+        setTimeout(renderChart, 100);
+        return;
+      }
+
+      const months = await DB.groupByMonth(); // Mengambil data asinkron dari database MySQL
+      const labels = months.length ? months.map((m) => DB.monthLabel(m.key)) : ["Belum ada data"];
+      const nominalData = months.length ? months.map((m) => m.totalNominal) : [0];
+      const okupansiData = months.length ? months.map((m) => m.totalOkupansi) : [0];
+
+      const canvas = document.getElementById("trendChart");
+      const chartEmpty = document.getElementById("chartEmptyState");
+
+      if (!canvas) return;
+
+      if (!months.length && chartEmpty) {
+        canvas.classList.add("hidden");
+        chartEmpty.classList.remove("hidden");
+        if (chartInstance) {
+          chartInstance.destroy();
+          chartInstance = null;
+        }
+        return;
+      }
+
+      if (chartEmpty) chartEmpty.classList.add("hidden");
+      canvas.classList.remove("hidden");
+
+      const ctx = canvas.getContext("2d");
+      if (chartInstance) chartInstance.destroy();
+
+      chartInstance = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: "Pendapatan (Rp)",
+              data: nominalData,
+              borderColor: "#ff527b",
+              backgroundColor: "rgba(255, 82, 123, 0.2)",
+              yAxisID: "y",
+              tension: 0,        // <-- Wajib 0 agar garisnya bersudut tajam (tidak melengkung)
+              fill: false,       // Tanpa arsiran
+              pointRadius: 4,
+              pointBackgroundColor: "#ff527b",
+              borderWidth: 2,
+            },
+            {
+              label: "Okupansi (jam)",
+              data: okupansiData,
+              borderColor: "#35b3a3",
+              backgroundColor: "rgba(53, 179, 163, 0.2)",
+              yAxisID: "y1",
+              tension: 0,        // <-- Wajib 0 agar garisnya bersudut tajam
+              fill: false,       // Tanpa arsiran
+              pointRadius: 4,
+              pointBackgroundColor: "#35b3a3",
+              borderWidth: 2,
+            },
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            filler: {
+              propagate: false,
+            },
+            title: {
+              display: false,
+              text: "Tren Bulanan — Pendapatan & Okupansi",
+              color: "#96a5b3",
+              font: { size: 13, weight: "600" }
+            },
+            legend: {
+              display: true,
+              position: "top"
+            },
+            tooltip: {
+              backgroundColor: "#1a222b",
+              borderColor: "#2c3945",
+              borderWidth: 1,
+              titleColor: "#eef2f5",
+              bodyColor: "#96a5b3",
+              padding: 10,
+              callbacks: {
+                label: (item) => {
+                  if (!months.length) return " Belum ada data transaksi";
+                  if (item.dataset.yAxisID === "y") {
+                    return " Pendapatan: " + formatRupiah(item.raw);
+                  }
+                  return " Okupansi: " + formatJam(item.raw);
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              grid: { color: "#232e39" },
+              ticks: { color: "#96a5b3" },
+            },
+            y: {
+              position: "left",
+              min: 0, // Dimulai dari 0 agar data nominal terbaca dengan benar
+              grid: { color: "#232e39" },
+              ticks: {
+                color: "#96a5b3",
+                callback: (v) => "Rp " + v.toLocaleString("id-ID"), // Format rupiah kembali aktif
+              },
+            },
+            y1: {
+              position: "right",
+              min: 0, // Dimulai dari 0 untuk jam okupansi
+              grid: { display: false },
+              ticks: {
+                color: "#96a5b3",
+                callback: (v) => v + " jam" // Format jam kembali aktif
+              },
+            },
+          },
+        },
+      });
+    }
+
+    /* ---- Tabel detail transaksi + bukti transfer ---- */
+    async function renderDetailTable() {
+      const tbody = document.getElementById("detailTableBody");
+      const emptyState = document.getElementById("emptyStateDetail");
+      const key = monthFilter.value;
+      const q = searchDetail.value.trim().toLowerCase();
+      const jenis = filterJenisDetail.value;
+
+      let data = await DB.getAll();
+      if (key) {
+        data = data.filter((t) => {
+          const d = new Date(t.tanggalTransfer);
+          const k = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+          return k === key;
+        });
+      }
+      if (q) {
+        data = data.filter(
+          (t) => t.nama.toLowerCase().includes(q) || (t.catatan || "").toLowerCase().includes(q)
+        );
+      }
+      if (jenis) data = data.filter((t) => t.jenisTransfer === jenis);
+
+      tbody.innerHTML = "";
+      emptyState.classList.toggle("hidden", data.length > 0);
+
+      data.forEach((t) => {
+        const tagClass =
+          t.jenisTransfer === "Qris" ? "tag-qris" : t.jenisTransfer === "Transfer" ? "tag-transfer" : "tag-cash";
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${t.gambarBukti
+            ? `<img src="${t.gambarBukti}" class="thumb" data-img="${t.gambarBukti}" alt="Bukti transfer" />`
+            : `<div class="thumb-empty">—</div>`
+          }</td>
+          <td>${escapeHtml(t.nama)}</td>
+          <td>${formatTanggal(t.tanggalMain)}</td>
+          <td><span class="tag ${tagClass}">${t.jenisTransfer}</span></td>
+          <td>${formatTanggal(t.tanggalTransfer)}</td>
+          <td class="mono">${formatRupiah(t.nominal)}</td>
+          <td>${t.jamMulai && t.jamSelesai ? `${t.jamMulai}–${t.jamSelesai}` : "-"}</td>
+          <td>${formatJam(t.okupansiJam)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tbody.querySelectorAll("img.thumb").forEach((img) => {
+        img.addEventListener("click", () => {
+          lightboxImg.src = img.dataset.img;
+          lightbox.classList.add("open");
+        });
+      });
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement("div");
+      div.textContent = str || "";
+      return div.innerHTML;
+    }
+
+    /* ---- Ekspor spreadsheet (rekap bulanan + detail) ---- */
+    async function exportSpreadsheet() {
+      const months = await DB.groupByMonth();
+      if (!months.length) {
+        showToast("Belum ada data untuk diekspor.", "err");
+        return;
+      }
+
+      const rows = (await DB.getAll()).map((t) => {
+        const jamMain = (t.jamMulai && t.jamSelesai)
+          ? `${t.jamMulai} - ${t.jamSelesai}`
+          : (t.jamMulai || t.jamSelesai || "-");
+
+        return {
+          "ATAS NAMA / KOMUNITAS": t.nama,
+          "TGL/BULAN MAIN": t.tanggalMain,
+          "JAM MAIN": jamMain,
+          "PEMBAYARAN": t.jenisTransfer,
+          "TGL PEMBAYARAN": t.tanggalTransfer,
+          "NOMINAL": t.nominal,
+          "NOTE": t.catatan,
+        };
+      });
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(rows, { origin: "A5" });
+      XLSX.utils.sheet_add_aoa(ws, [["Pembayaran Lapangan dan Coaching ke Rekening PT Adinata Perkasa Utama"]], { origin: "A1" });
+      ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
+      ws["A1"].s = {
+        font: { bold: true, sz: 14, color: { rgb: "000000" } },
+        alignment: { horizontal: "center", vertical: "center" },
+      };
+      const headerStyle = {
+        fill: { patternType: "solid", fgColor: { rgb: "70AD47" } },
+        font: { bold: true, color: { rgb: "FFFFFF" } },
+        alignment: { horizontal: "center", vertical: "center" },
+      };
+      Object.keys(rows[0]).forEach((_, index) => {
+        const cell = XLSX.utils.encode_cell({ r: 4, c: index });
+        ws[cell].s = headerStyle;
+      });
+      ws["!rows"] = [{ hpt: 24 }, {}, {}, {}, { hpt: 32 }];
+      ws["!cols"] = [
+        { wch: 25 }, { wch: 18 }, { wch: 15 }, { wch: 15 },
+        { wch: 18 }, { wch: 15 }, { wch: 40 },
+      ];
+      XLSX.utils.book_append_sheet(wb, ws, "Transaksi");
+
+      const filename = `dashboard-rekap-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      XLSX.writeFile(wb, filename);
+      showToast("Berhasil diekspor ke spreadsheet.", "ok");
+    }
+
+    SuperAdminView._refreshGateVisibility = refreshGateVisibility;
+    SuperAdminView._renderAll = renderAll;
+  }
+
+  function onEnter() {
+    init();
+    const loggedIn = SuperAdminView._refreshGateVisibility();
+    if (loggedIn) SuperAdminView._renderAll();
+  }
+
+  return { init, onEnter };
+})();
