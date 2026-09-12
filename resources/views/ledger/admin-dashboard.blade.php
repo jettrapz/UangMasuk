@@ -14,16 +14,15 @@
   <div class="app-shell">
     <aside class="sidebar">
       <div class="brand">
-        <div class="brand-mark">S</div>
+        <div class="brand-mark">A</div>
         <div class="brand-text">
           <div class="name">Ledger</div>
-          <div class="role">Super Admin - {{ Auth::user()->name }}</div>
+          <div class="role">Admin - {{ Auth::user()->name }}</div>
         </div>
       </div>
       <nav class="nav">
-        <div class="nav-group-label">Menu</div>
-          <a href="{{ route('admin') }}">Input Transaksi</a>
-          <a href="{{ route('superadmin') }}" class="active">Dashboard Super Admin</a>
+        <div class="nav-group-label">Menu</div><a href="{{ route('admin') }}">Input Transaksi</a><a
+          href="{{ route('admin.dashboard') }}" class="active">Dashboard</a>
       </nav>
       <div class="sidebar-foot">
         <form method="POST" action="{{ route('logout') }}">@csrf<button class="btn btn-ghost btn-sm"
@@ -33,11 +32,12 @@
     <main class="main">
       <div class="topbar">
         <div>
-          <div class="eyebrow">Super Admin</div>
-          <h1>Dashboard Rekap</h1>
-          <p class="sub">Ringkasan pendapatan dan okupansi, per bulan maupun keseluruhan.</p>
+          <div class="eyebrow">Admin</div>
+          <h1>Dashboard Statistik</h1>
+          <p class="sub">Ringkasan transaksi milik Anda sendiri.</p>
         </div>
-        <div class="topbar-actions"><a class="btn btn-teal" href="{{ route('superadmin.export') }}">Ekspor CSV</a></div>
+        <div class="topbar-actions"><a class="btn btn-teal" href="{{ route('admin.export', 'user') }}">Ekspor CSV</a>
+        </div>
       </div>
       <div class="stat-grid">
         <div class="stat-card">
@@ -100,7 +100,7 @@
         </div>
       </div>
       <div class="card">
-        <div class="card-title">Detail Transaksi &amp; Bukti Transfer</div>
+        <div class="card-title">Detail Transaksi Anda</div>
         <div class="table-wrap">
           <table>
             <thead>

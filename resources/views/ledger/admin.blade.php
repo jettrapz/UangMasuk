@@ -7,15 +7,15 @@
         <div class="brand-mark">A</div>
         <div class="brand-text">
           <div class="name">Ledger</div>
-          <div class="role">Admin</div>
+          <div class="role">Admin - {{ Auth::user()->name }}</div>
         </div>
       </div>
       <nav class="nav">
-        <div class="nav-group-label">Menu</div><a href="{{ route('admin') }}" class="active">Input Transaksi</a><a
-          href="{{ route('superadmin') }}">Dashboard Super Admin</a>
+        <div class="nav-group-label">Menu</div><a href="{{ route('admin') }}">Input Transaksi</a><a
+          href="{{ route('admin.dashboard') }}">Dashboard</a>
       </nav>
       <div class="sidebar-foot">
-        <form method="POST" action="{{ route('logout', 'admin') }}">@csrf<button class="btn btn-ghost btn-sm"
+        <form method="POST" action="{{ route('logout') }}">@csrf<button class="btn btn-ghost btn-sm"
             style="width:100%;">Keluar</button></form>
       </div>
     </aside>

@@ -8,17 +8,11 @@
             <h1>Ledger</h1>
             <p class="lead">Catat uang masuk beserta bukti transfer, lalu pantau okupansi dan pendapatan bulanan.</p>
             <div class="role-grid">
-                <a class="role-card" href="{{ route('login', 'admin') }}">
+                <a class="role-card" href="{{ route('login') }}">
                     <div class="icon">+</div>
-                    <h3>Masuk sebagai Admin</h3>
-                    <p>Input transaksi baru dan unggah bukti transfer.</p>
-                    <span class="go">Buka halaman input &rarr;</span>
-                </a>
-                <a class="role-card" href="{{ route('login', 'superadmin') }}">
-                    <div class="icon">&#9776;</div>
-                    <h3>Masuk sebagai Super Admin</h3>
-                    <p>Lihat dashboard, rekap, dan ekspor transaksi.</p>
-                    <span class="go">Buka dashboard &rarr;</span>
+                    <h3>Login</h3>
+                    <p>Masuk dengan email dan kata sandi.</p>
+                    <span class="go">Buka halaman login &rarr;</span>
                 </a>
             </div>
         </div>
