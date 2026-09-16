@@ -1,4 +1,4 @@
-@extends('ledger.layout')
+@extends('layouts.layout')
 
 @section('content')
   @php
@@ -22,10 +22,8 @@
       </div>
       <nav class="nav">
         <div class="nav-group-label">Menu</div>
-          @if(Auth::user()->role === 'superadmin')
-            <a href="{{ route('superadmin.transactions.create') }}">Input Transaksi</a>
-          @endif
-          <a href="{{ route('superadmin') }}" class="active">Dashboard Super Admin</a>
+        <a href="{{ route('superadmin.transactions.create') }}">Input Transaksi</a>
+        <a href="{{ route('superadmin') }}" class="active">Dashboard Super Admin</a>
       </nav>
       <div class="sidebar-foot">
         <form method="POST" action="{{ route('logout') }}">@csrf<button class="btn btn-ghost btn-sm"

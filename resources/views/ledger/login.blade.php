@@ -1,4 +1,4 @@
-@extends('ledger.layout')
+@extends('layouts.layout')
 
 @section('content')
     <div class="gate">

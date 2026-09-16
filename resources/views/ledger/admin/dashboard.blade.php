@@ -1,16 +1,6 @@
-@extends('ledger.layout')
+@extends('layouts.layout')
 
 @section('content')
-  @php
-    $chartLabels = [];
-    $chartNominal = [];
-    $chartOkupansi = [];
-    foreach ($months as $month) {
-      $chartLabels[] = \Carbon\Carbon::createFromFormat('Y-m', $month->month)->format('M Y');
-      $chartNominal[] = (float) $month->total_nominal;
-      $chartOkupansi[] = (float) $month->total_okupansi;
-    }
-  @endphp
   <div class="app-shell">
     <aside class="sidebar">
       <div class="brand">
@@ -22,7 +12,7 @@
       </div>
       <nav class="nav">
         <div class="nav-group-label">Menu</div>
-        <a href="{{ route('admin') }}">Input Transaksi</a>
+        <a href="{{ route('admin.transactions.create') }}">Input Transaksi</a>
         <a href="{{ route('admin.dashboard') }}" class="active">Dashboard</a>
       </nav>
       <div class="sidebar-foot">

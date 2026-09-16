@@ -1,21 +1,19 @@
-@extends('ledger.layout')
+@extends('layouts.layout')
 
 @section('content')
   <div class="app-shell">
     <aside class="sidebar">
       <div class="brand">
-        <div class="brand-mark">{{ Auth::user()->role === 'superadmin' ? 'S' : 'A' }}</div>
+        <div class="brand-mark">S</div>
         <div class="brand-text">
           <div class="name">Ledger</div>
-          <div class="role">{{ Auth::user()->role === 'superadmin' ? 'Super Admin' : 'Admin' }} - {{ Auth::user()->name }}
-          </div>
+          <div class="role">Super Admin - {{ Auth::user()->name }}</div>
         </div>
       </div>
       <nav class="nav">
         <div class="nav-group-label">Menu</div>
-        <a href="{{ Auth::user()->role === 'superadmin' ? route('superadmin.transactions.create') : route('admin') }}"
-          class="active">Input Transaksi</a>
-        <a href="{{ Auth::user()->role === 'superadmin' ? route('superadmin') : route('admin.dashboard') }}">Dashboard</a>
+        <a href="{{ route('superadmin.transactions.create') }}">Input Transaksi</a>
+        <a href="{{ route('superadmin') }}" class="active">Dashboard Super Admin</a>
       </nav>
       <div class="sidebar-foot">
         <form method="POST" action="{{ route('logout') }}">@csrf<button class="btn btn-ghost btn-sm"
@@ -25,14 +23,12 @@
     <main class="main">
       <div class="topbar">
         <div>
-          <div class="eyebrow">{{ Auth::user()->role === 'superadmin' ? 'Super Admin' : 'Admin' }}</div>
-          <h1>{{ Auth::user()->role === 'superadmin' ? 'Input Transaksi' : 'Input Uang Masuk' }}</h1>
+          <div class="eyebrow">Super Admin</div>
+          <h1>Input Transaksi</h1>
           <p class="sub">Catat transaksi baru lengkap dengan bukti transfer dan data okupansi.</p>
         </div>
         <div class="topbar-actions">
-          @if(Auth::user()->role === 'superadmin')
-            <a class="btn btn-teal" href="{{ route('superadmin') }}">Dashboard Super Admin</a>
-          @endif
+          <a class="btn btn-teal" href="{{ route('superadmin') }}">Dashboard</a>
         </div>
       </div>
       @if(session('success'))
@@ -43,12 +39,10 @@
         <div class="card-title">{{ $editing ? 'Edit Transaksi' : 'Form Transaksi' }}</div>
         @if($editing)
           <div class="edit-banner">Mengedit transaksi: {{ $editing->nama }} <a class="btn btn-ghost btn-sm"
-              href="{{ Auth::user()->role === 'superadmin' ? route('superadmin.transactions.create') : route('admin') }}">Batal
-        Edit</a></div>@endif
+        href="{{ route('superadmin.transactions.create') }}">Batal Edit</a></div>@endif
         <form method="POST" action="{{ $editing
-    ? route(Auth::user()->role === 'superadmin' ? 'superadmin.transactions.update' : 'admin.transactions.update', $editing)
-    : route(Auth::user()->role === 'superadmin' ? 'superadmin.transactions.store' : 'admin.transactions.store') }}"
-          enctype="multipart/form-data">
+    ? route('superadmin.transactions.update', $editing)
+    : route('superadmin.transactions.store') }}" enctype="multipart/form-data">
           @csrf
           @if($editing) @method('PUT') @endif
           <div class="form-grid">
@@ -121,9 +115,8 @@
                   </td>
                   <td>{{ $transaction->catatan ?: '-' }}</td>
                   <td><a class="btn btn-ghost btn-sm"
-                      href="{{ route(Auth::user()->role === 'superadmin' ? 'superadmin.transactions.edit' : 'admin.transactions.edit', $transaction) }}">Edit</a>
-                    <form method="POST"
-                      action="{{ route(Auth::user()->role === 'superadmin' ? 'superadmin.transactions.destroy' : 'admin.transactions.destroy', $transaction) }}">
+                      href="{{ route('superadmin.transactions.edit', $transaction) }}">Edit</a>
+                    <form method="POST" action="{{ route('superadmin.transactions.destroy', $transaction) }}">
                       @csrf
                       @method('DELETE')<button class="btn btn-ghost btn-sm" type="submit">Hapus</button></form>
                   </td>

@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Builder;
 
 class Transaction extends Model
 {
-        use SoftDeletes;
+    use SoftDeletes;
 
     protected $fillable = [
         'nama',
@@ -43,5 +44,21 @@ class Transaction extends Model
     public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function scopeForUser(Builder $query, $user): Builder
+    {
+        if ($user->role === 'superadmin') {
+            return $query;
+        }
+        return $query->where('created_by', $user->id);
+    }
+
+    public function scopeForRole(Builder $query, $user): Builder
+    {
+        if ($user->role === 'superadmin') {
+            return $query;
+        }
+        return $query->where('created_by', $user->id);
     }
 }
