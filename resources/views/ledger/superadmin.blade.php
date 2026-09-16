@@ -22,7 +22,9 @@
       </div>
       <nav class="nav">
         <div class="nav-group-label">Menu</div>
-          <a href="{{ route('admin') }}">Input Transaksi</a>
+          @if(Auth::user()->role === 'superadmin')
+            <a href="{{ route('superadmin.transactions.create') }}">Input Transaksi</a>
+          @endif
           <a href="{{ route('superadmin') }}" class="active">Dashboard Super Admin</a>
       </nav>
       <div class="sidebar-foot">

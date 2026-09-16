@@ -4,15 +4,18 @@
   <div class="app-shell">
     <aside class="sidebar">
       <div class="brand">
-        <div class="brand-mark">A</div>
+        <div class="brand-mark">{{ Auth::user()->role === 'superadmin' ? 'S' : 'A' }}</div>
         <div class="brand-text">
           <div class="name">Ledger</div>
-          <div class="role">Admin - {{ Auth::user()->name }}</div>
+          <div class="role">{{ Auth::user()->role === 'superadmin' ? 'Super Admin' : 'Admin' }} - {{ Auth::user()->name }}
+          </div>
         </div>
       </div>
       <nav class="nav">
-        <div class="nav-group-label">Menu</div><a href="{{ route('admin') }}">Input Transaksi</a><a
-          href="{{ route('admin.dashboard') }}">Dashboard</a>
+        <div class="nav-group-label">Menu</div>
+        <a href="{{ Auth::user()->role === 'superadmin' ? route('superadmin.transactions.create') : route('admin') }}"
+          class="active">Input Transaksi</a>
+        <a href="{{ Auth::user()->role === 'superadmin' ? route('superadmin') : route('admin.dashboard') }}">Dashboard</a>
       </nav>
       <div class="sidebar-foot">
         <form method="POST" action="{{ route('logout') }}">@csrf<button class="btn btn-ghost btn-sm"
@@ -22,11 +25,14 @@
     <main class="main">
       <div class="topbar">
         <div>
-          <div class="eyebrow">Admin</div>
-          <h1>Input Uang Masuk</h1>
+          <div class="eyebrow">{{ Auth::user()->role === 'superadmin' ? 'Super Admin' : 'Admin' }}</div>
+          <h1>{{ Auth::user()->role === 'superadmin' ? 'Input Transaksi' : 'Input Uang Masuk' }}</h1>
           <p class="sub">Catat transaksi baru lengkap dengan bukti transfer dan data okupansi.</p>
         </div>
-        <div class="topbar-actions"><a class="btn btn-teal" href="{{ route('superadmin') }}">Dashboard Super Admin</a>
+        <div class="topbar-actions">
+          @if(Auth::user()->role === 'superadmin')
+            <a class="btn btn-teal" href="{{ route('superadmin') }}">Dashboard Super Admin</a>
+          @endif
         </div>
       </div>
       @if(session('success'))
@@ -37,9 +43,11 @@
         <div class="card-title">{{ $editing ? 'Edit Transaksi' : 'Form Transaksi' }}</div>
         @if($editing)
           <div class="edit-banner">Mengedit transaksi: {{ $editing->nama }} <a class="btn btn-ghost btn-sm"
-        href="{{ route('admin') }}">Batal Edit</a></div>@endif
-        <form method="POST"
-          action="{{ $editing ? route('admin.transactions.update', $editing) : route('admin.transactions.store') }}"
+              href="{{ Auth::user()->role === 'superadmin' ? route('superadmin.transactions.create') : route('admin') }}">Batal
+        Edit</a></div>@endif
+        <form method="POST" action="{{ $editing
+    ? route(Auth::user()->role === 'superadmin' ? 'superadmin.transactions.update' : 'admin.transactions.update', $editing)
+    : route(Auth::user()->role === 'superadmin' ? 'superadmin.transactions.store' : 'admin.transactions.store') }}"
           enctype="multipart/form-data">
           @csrf
           @if($editing) @method('PUT') @endif
@@ -112,8 +120,11 @@
                     {{ $transaction->jam_selesai }}<br>{{ number_format($transaction->okupansi_jam, 2, ',', '.') }} jam
                   </td>
                   <td>{{ $transaction->catatan ?: '-' }}</td>
-                  <td><a class="btn btn-ghost btn-sm" href="{{ route('admin.transactions.edit', $transaction) }}">Edit</a>
-                    <form method="POST" action="{{ route('admin.transactions.destroy', $transaction) }}">@csrf
+                  <td><a class="btn btn-ghost btn-sm"
+                      href="{{ route(Auth::user()->role === 'superadmin' ? 'superadmin.transactions.edit' : 'admin.transactions.edit', $transaction) }}">Edit</a>
+                    <form method="POST"
+                      action="{{ route(Auth::user()->role === 'superadmin' ? 'superadmin.transactions.destroy' : 'admin.transactions.destroy', $transaction) }}">
+                      @csrf
                       @method('DELETE')<button class="btn btn-ghost btn-sm" type="submit">Hapus</button></form>
                   </td>
               </tr>@empty<tr>

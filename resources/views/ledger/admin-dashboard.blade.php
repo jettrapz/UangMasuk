@@ -21,8 +21,9 @@
         </div>
       </div>
       <nav class="nav">
-        <div class="nav-group-label">Menu</div><a href="{{ route('admin') }}">Input Transaksi</a><a
-          href="{{ route('admin.dashboard') }}" class="active">Dashboard</a>
+        <div class="nav-group-label">Menu</div>
+        <a href="{{ route('admin') }}">Input Transaksi</a>
+        <a href="{{ route('admin.dashboard') }}" class="active">Dashboard</a>
       </nav>
       <div class="sidebar-foot">
         <form method="POST" action="{{ route('logout') }}">@csrf<button class="btn btn-ghost btn-sm"
