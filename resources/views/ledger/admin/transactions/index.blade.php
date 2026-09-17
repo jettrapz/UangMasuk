@@ -2,24 +2,9 @@
 
 @section('content')
   <div class="app-shell">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-mark">A</div>
-        <div class="brand-text">
-          <div class="name">Ledger</div>
-          <div class="role">Admin - {{ Auth::user()->name }}</div>
-        </div>
-      </div>
-      <nav class="nav">
-        <div class="nav-group-label">Menu</div>
-        <a href="{{ route('admin.dashboard') }}">Dashboard</a>
-        <a href="{{ route('admin.transactions.create') }}" class="active">Input Transaksi</a>
-      </nav>
-      <div class="sidebar-foot">
-        <form method="POST" action="{{ route('logout') }}">@csrf<button class="btn btn-ghost btn-sm"
-            style="width:100%;">Keluar</button></form>
-      </div>
-    </aside>
+    <x-sidebar brand-mark="A" role-label="Admin" dashboard-route="admin.dashboard" dashboard-label="Dashboard"
+      dashboard-pattern="admin.dashboard" transactions-route="admin.transactions.create"
+      transactions-pattern="admin.transactions.*" />
     <main class="main">
       <div class="topbar">
         <div>

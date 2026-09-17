@@ -2,24 +2,9 @@
 
 @section('content')
   <div class="app-shell">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-mark">S</div>
-        <div class="brand-text">
-          <div class="name">Ledger</div>
-          <div class="role">Super Admin - {{ Auth::user()->name }}</div>
-        </div>
-      </div>
-      <nav class="nav">
-        <div class="nav-group-label">Menu</div>
-        <a href="{{ route('superadmin.transactions.create') }}" class="active">Input Transaksi</a>
-        <a href="{{ route('superadmin') }}">Dashboard Super Admin</a>
-      </nav>
-      <div class="sidebar-foot">
-        <form method="POST" action="{{ route('logout') }}">@csrf<button class="btn btn-ghost btn-sm"
-            style="width:100%;">Keluar</button></form>
-      </div>
-    </aside>
+    <x-sidebar brand-mark="S" role-label="Super Admin" dashboard-route="superadmin"
+      dashboard-label="Dashboard Super Admin" dashboard-pattern="superadmin"
+      transactions-route="superadmin.transactions.create" transactions-pattern="superadmin.transactions.*" />
     <main class="main">
       <div class="topbar">
         <div>
@@ -80,7 +65,9 @@
           @if($editing && $editing->gambar_bukti)<small>Bukti saat ini: <a
             href="{{ asset('storage/' . $editing->gambar_bukti) }}" target="_blank">Lihat gambar</a>. Upload baru untuk
           menggantinya.</small><br>@endif
-          <button class="btn btn-primary" type="submit">{{ $editing ? 'Update Transaksi' : 'Simpan Transaksi' }}</button>
+          <button class="btn btn-primary" type="submit">
+            {{ $editing ? 'Update Transaksi' : 'Simpan Transaksi' }}
+          </button>
         </form>
       </div>
       <div class="card">

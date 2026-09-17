@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\TransactionsExport;
 use App\Http\Controllers\Controller;
-use App\Services\TransactionExportService;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class LedgerController extends Controller
 {
@@ -15,8 +15,10 @@ class LedgerController extends Controller
         return view('ledger.home');
     }
 
-    public function export(TransactionExportService $exportService)
+    public function export(): BinaryFileResponse
     {
-        return $exportService->export();
+        $filename = 'transaksi-uang-masuk-' . now()->format('Y-m-d') . '.xlsx';
+
+        return Excel::download(new TransactionsExport, $filename);
     }
 }

@@ -2,24 +2,9 @@
 
 @section('content')
   <div class="app-shell">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-mark">S</div>
-        <div class="brand-text">
-          <div class="name">Ledger</div>
-          <div class="role">Super Admin - {{ Auth::user()->name }}</div>
-        </div>
-      </div>
-      <nav class="nav">
-        <div class="nav-group-label">Menu</div>
-        <a href="{{ route('superadmin') }}">Dashboard Super Admin</a>
-        <a href="{{ route('superadmin.transactions.create') }}" class="active">Input Transaksi</a>
-      </nav>
-      <div class="sidebar-foot">
-        <form method="POST" action="{{ route('logout') }}">@csrf<button class="btn btn-ghost btn-sm"
-            style="width:100%;">Keluar</button></form>
-      </div>
-    </aside>
+    <x-sidebar brand-mark="S" role-label="Super Admin" dashboard-route="superadmin" dashboard-label="Dashboard Super Admin"
+      dashboard-pattern="superadmin" transactions-route="superadmin.transactions.create"
+      transactions-pattern="superadmin.transactions.*" />
     <main class="main">
       <div class="topbar">
         <div>
@@ -45,7 +30,9 @@
     : route('superadmin.transactions.store') }}" enctype="multipart/form-data">
           @csrf
           @if($editing) @method('PUT') @endif
-          <x-transaction-form :value="old('nama', $editing?->nama)" :dateValue="old('tanggal_main', $editing?->tanggal_main?->format('Y-m-d') ?? now()->toDateString())" :transferDateValue="old('tanggal_transfer', $editing?->tanggal_transfer?->format('Y-m-d') ?? now()->toDateString())" :selectedType="old('jenis_transfer', $editing?->jenis_transfer)" :numericValue="old('nominal', $editing?->nominal)" :timeValue="old('jam_mulai', $editing?->jam_mulai ? substr($editing->jam_mulai, 0, 5) : null)" :endTimeValue="old('jam_selesai', $editing?->jam_selesai ? substr($editing->jam_selesai, 0, 5) : null)" :notes="old('catatan', $editing?->catatan)" />
+          <x-transaction-form :value="old('nama', $editing?->nama)" :dateValue="old('tanggal_main', $editing?->tanggal_main?->format('Y-m-d') ?? now()->toDateString())"
+            :transferDateValue="old('tanggal_transfer', $editing?->tanggal_transfer?->format('Y-m-d') ?? now()->toDateString())" :selectedType="old('jenis_transfer', $editing?->jenis_transfer)"
+            :numericValue="old('nominal', $editing?->nominal)" :timeValue="old('jam_mulai', $editing?->jam_mulai ? substr($editing->jam_mulai, 0, 5) : null)" :endTimeValue="old('jam_selesai', $editing?->jam_selesai ? substr($editing->jam_selesai, 0, 5) : null)" :notes="old('catatan', $editing?->catatan)" />
           @if($editing && $editing->gambar_bukti)<small>Bukti saat ini: <a
             href="{{ asset('storage/' . $editing->gambar_bukti) }}" target="_blank">Lihat gambar</a>. Upload baru untuk
           menggantinya.</small><br>@endif
@@ -54,8 +41,8 @@
       </div>
       <div class="card">
         <div class="card-title">Riwayat Transaksi</div>
-        <x-transaction-table :transactions="$transactions" :actions="true"
-          edit-route="superadmin.transactions.edit" delete-route="superadmin.transactions.destroy" />
+        <x-transaction-table :transactions="$transactions" :actions="true" edit-route="superadmin.transactions.edit"
+          delete-route="superadmin.transactions.destroy" />
       </div>
     </main>
   </div>
