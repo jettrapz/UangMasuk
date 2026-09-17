@@ -335,7 +335,7 @@ File tersebut dapat membingungkan karena sebagian tidak lagi dipakai oleh halama
 
 ### Prioritas 4: Pelaporan
 
-- Migrasikan ekspor CSV ke Excel `.xlsx` jika diperlukan.
+- Migrasikan Export Excel ke Excel `.xlsx` jika diperlukan.
 - Tambahkan filter tanggal dan bulan.
 - Tambahkan laporan pendapatan per metode pembayaran.
 - Tambahkan laporan transaksi per Admin.

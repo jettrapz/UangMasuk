@@ -1,45 +1,19 @@
-@extends('ledger.layout')
+@extends('layouts.layout')
 
 @section('content')
-  @php
-    $chartLabels = [];
-    $chartNominal = [];
-    $chartOkupansi = [];
-    foreach ($months as $month) {
-      $chartLabels[] = \Carbon\Carbon::createFromFormat('Y-m', $month->month)->format('M Y');
-      $chartNominal[] = (float) $month->total_nominal;
-      $chartOkupansi[] = (float) $month->total_okupansi;
-    }
-  @endphp
   <div class="app-shell">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-mark">S</div>
-        <div class="brand-text">
-          <div class="name">Ledger</div>
-          <div class="role">Super Admin - {{ Auth::user()->name }}</div>
-        </div>
-      </div>
-      <nav class="nav">
-        <div class="nav-group-label">Menu</div>
-          @if(Auth::user()->role === 'superadmin')
-            <a href="{{ route('superadmin.transactions.create') }}">Input Transaksi</a>
-          @endif
-          <a href="{{ route('superadmin') }}" class="active">Dashboard Super Admin</a>
-      </nav>
-      <div class="sidebar-foot">
-        <form method="POST" action="{{ route('logout') }}">@csrf<button class="btn btn-ghost btn-sm"
-            style="width:100%;">Keluar</button></form>
-      </div>
-    </aside>
+    <x-sidebar brand-mark="A" role-label="Admin" dashboard-route="admin.dashboard" dashboard-label="Dashboard"
+      dashboard-pattern="admin.dashboard" transactions-route="admin.transactions.create"
+      transactions-pattern="admin.transactions.*" />
     <main class="main">
       <div class="topbar">
         <div>
-          <div class="eyebrow">Super Admin</div>
-          <h1>Dashboard Rekap</h1>
-          <p class="sub">Ringkasan pendapatan dan okupansi, per bulan maupun keseluruhan.</p>
+          <div class="eyebrow">Admin</div>
+          <h1>Dashboard Statistik</h1>
+          <p class="sub">Ringkasan transaksi milik Anda sendiri.</p>
         </div>
-        <div class="topbar-actions"><a class="btn btn-teal" href="{{ route('superadmin.export') }}">Ekspor CSV</a></div>
+        <div class="topbar-actions"><a class="btn btn-teal" href="{{ route('admin.export', 'user') }}">Ekspor Excel</a>
+        </div>
       </div>
       <div class="stat-grid">
         <div class="stat-card">
@@ -102,7 +76,7 @@
         </div>
       </div>
       <div class="card">
-        <div class="card-title">Detail Transaksi &amp; Bukti Transfer</div>
+        <div class="card-title">Detail Transaksi Anda</div>
         <div class="table-wrap">
           <table>
             <thead>

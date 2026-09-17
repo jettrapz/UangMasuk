@@ -117,29 +117,39 @@ textarea {
 /* ---------- Layout shell ---------- */
 .app-shell {
   min-height: 100vh;
-  display: grid;
-  grid-template-columns: 240px 1fr;
+  display: block;
 }
 
 @media (max-width: 880px) {
   .app-shell {
-    grid-template-columns: 1fr;
-  }
-
-  .sidebar {
-    position: sticky;
-    top: 0;
-    z-index: 20;
+    display: block;
   }
 }
 
 .sidebar {
+  /* Fix posisi agar tidak ikut scroll halaman utama */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 260px;
+  /* Tentukan lebar pasti sidebar */
+  height: 100vh;
+  /* Memenuhi tinggi layar penuh */
+  z-index: 20;
+
+  /* Agar padding tidak menambah ukuran luar elemen */
+  box-sizing: border-box;
+
+  /* Layout Flexbox Vertikal */
   background: var(--surface);
   border-right: 1px solid var(--border-soft);
   padding: 22px 18px;
   display: flex;
   flex-direction: column;
   gap: 26px;
+
+  /* Scroll internal jika menu sangat banyak di layar kecil */
+  overflow-y: auto;
 }
 
 .brand {
@@ -180,7 +190,7 @@ textarea {
   text-transform: uppercase;
   letter-spacing: .1em;
   color: var(--text-faint);
-  margin: 4px 0 -8px 10px;
+  margin: 4px 0 8px 10px;
 }
 
 .nav {
@@ -221,16 +231,24 @@ textarea {
 }
 
 .sidebar-foot {
+  /* Mendorong footer ke bagian paling bawah flex container */
   margin-top: auto;
   font-size: 11px;
   color: var(--text-faint);
   padding: 0 4px;
+
+  /* Opsional: Mencegah footer mengkerut jika konten menu meluap */
+  flex-shrink: 0;
 }
 
 /* ---------- Main column ---------- */
 .main {
+  margin-left: 260px;
+  width: calc(100% - 260px);
+  min-width: 0;
   padding: 26px 30px 60px;
-  max-width: 1180px;
+  max-width: none;
+  box-sizing: border-box;
 }
 
 .topbar {
@@ -1031,4 +1049,23 @@ tbody tr:hover {
 
 .mt-20 {
   margin-top: 20px;
+}
+
+@media (max-width: 880px) {
+  .sidebar {
+    position: sticky;
+    top: 0;
+    left: auto;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    z-index: 20;
+  }
+
+  .main {
+    margin-left: 0;
+    width: 100%;
+    max-width: none;
+    padding: 22px 18px 48px;
+  }
 }
