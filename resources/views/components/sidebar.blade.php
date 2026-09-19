@@ -6,6 +6,8 @@
     'dashboardPattern',
     'transactionsRoute',
     'transactionsPattern',
+    'historyRoute' => null,
+    'historyPattern' => null,
 ])
 
 <aside class="sidebar">
@@ -22,9 +24,14 @@
     <a href="{{ route($dashboardRoute) }}" class="{{ request()->routeIs($dashboardPattern) ? 'active' : '' }}">
       {{ $dashboardLabel }}
     </a>
-    <a href="{{ route($transactionsRoute) }}" class="{{ request()->routeIs($transactionsPattern) ? 'active' : '' }}">
+    <a href="{{ route($transactionsRoute) }}" class="{{ request()->routeIs($transactionsPattern) && !($historyPattern && request()->routeIs($historyPattern)) ? 'active' : '' }}">
       Input Transaksi
     </a>
+    @if($historyRoute)
+      <a href="{{ route($historyRoute) }}" class="{{ $historyPattern && request()->routeIs($historyPattern) ? 'active' : '' }}">
+        Riwayat Transaksi
+      </a>
+    @endif
   </nav>
 
   <div class="sidebar-foot">

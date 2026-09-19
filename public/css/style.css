@@ -497,6 +497,42 @@ textarea {
   min-height: 70px;
 }
 
+.select-wrap {
+  position: relative;
+}
+
+.select-enhanced {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 38px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: border-color .15s ease, background .15s ease;
+}
+
+.select-enhanced:hover {
+  border-color: var(--text-faint);
+  background: var(--surface-3);
+}
+
+.select-wrap::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  opacity: .7;
+  background: no-repeat center / 16px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2396a5b3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  transition: transform .15s ease;
+}
+
+.select-wrap:has(.select-enhanced:focus)::after {
+  transform: translateY(-50%) rotate(180deg);
+}
+
 /* Kotak durasi okupansi otomatis (dari jam mulai - jam selesai) */
 .computed-box {
   background: var(--surface-3);

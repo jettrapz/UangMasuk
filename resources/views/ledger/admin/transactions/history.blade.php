@@ -10,19 +10,19 @@
       <div class="topbar">
         <div>
           <div class="eyebrow">Admin</div>
-          <h1>Input Uang Masuk</h1>
-          <p class="sub">Catat transaksi baru — lihat riwayat di tab Riwayat Transaksi.</p>
+          <h1>Riwayat Transaksi</h1>
+          <p class="sub">Daftar transaksi milik Anda — kelola via aksi Edit/Hapus.</p>
         </div>
         <div class="topbar-actions">
-          <a class="btn btn-teal" href="{{ route('admin.transactions.history') }}">Riwayat</a>
+          <a class="btn btn-teal" href="{{ route('admin.transactions.create') }}">Input Transaksi</a>
           <a class="btn btn-ghost btn-sm" href="{{ route('admin.dashboard') }}">Dashboard</a>
         </div>
       </div>
+      @if(session('success'))<x-alert type="success" :message="session('success')" />@endif
       <div class="card">
-        <div class="card-title">Form Transaksi</div>
-        <p class="sub">Gunakan menu <strong>Input Transaksi</strong> untuk menambah data, dan <strong>Riwayat
-            Transaksi</strong> untuk melihat/edit/hapus.</p>
-        <a class="btn btn-primary" href="{{ route('admin.transactions.create') }}">Buka Form Input</a>
+        <div class="card-title">Riwayat Transaksi</div>
+        <x-transaction-table :transactions="$transactions" :actions="true" edit-route="admin.transactions.edit"
+          delete-route="admin.transactions.destroy" />
       </div>
     </main>
   </div>

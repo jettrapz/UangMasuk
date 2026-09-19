@@ -23,20 +23,23 @@ class TransactionController extends Controller
 
     public function index(Request $request): View
     {
-        $transactions = Transaction::latest('tanggal_transfer')->get();
-
         $editing = null;
 
-        return view('ledger.superadmin.transactions.create', compact('transactions', 'editing'));
+        return view('ledger.superadmin.transactions.create', compact('editing'));
+    }
+
+    public function history(): View
+    {
+        $transactions = Transaction::latest('tanggal_transfer')->get();
+
+        return view('ledger.superadmin.transactions.history', compact('transactions'));
     }
 
     public function create(): View
     {
-        $transactions = Transaction::latest('tanggal_transfer')->get();
-
         $editing = null;
 
-        return view('ledger.superadmin.transactions.create', compact('transactions', 'editing'));
+        return view('ledger.superadmin.transactions.create', compact('editing'));
     }
 
     public function store(StoreTransactionRequest $request): RedirectResponse
@@ -49,10 +52,7 @@ class TransactionController extends Controller
 
     public function edit(Transaction $transaction): View
     {
-        $transactions = Transaction::latest('tanggal_transfer')->get();;
-
         return view('ledger.superadmin.transactions.edit', [
-            'transactions' => $transactions,
             'editing' => $transaction,
         ]);
     }

@@ -26,8 +26,7 @@
                         <input type="checkbox" name="remember"> Ingat saya
                     </label>
                 </div>
-                @error('email')
-                <div class="gate-error">{{ $message }}</div>@enderror
+                @error('email')<x-alert type="error" :message="$message" />@enderror
                 <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Masuk</button>
             </form>
             <p class="footnote" style="margin-top:16px;">Demo: <span class="mono">admin@ledger.local</span> / <span

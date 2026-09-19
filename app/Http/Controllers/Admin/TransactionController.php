@@ -23,24 +23,25 @@ class TransactionController extends Controller
 
     public function index(Request $request): View
     {
-        $transactions = Transaction::forRole(Auth::user())
-            ->latest('tanggal_transfer')
-            ->get();
-
         $editing = null;
 
-        return view('ledger.admin.transactions.create', compact('transactions', 'editing'));
+        return view('ledger.admin.transactions.create', compact('editing'));
     }
 
-    public function create(): View
+    public function history(): View
     {
         $transactions = Transaction::forRole(Auth::user())
             ->latest('tanggal_transfer')
             ->get();
 
+        return view('ledger.admin.transactions.history', compact('transactions'));
+    }
+
+    public function create(): View
+    {
         $editing = null;
 
-        return view('ledger.admin.transactions.create', compact('transactions', 'editing'));
+        return view('ledger.admin.transactions.create', compact('editing'));
     }
 
     public function store(StoreTransactionRequest $request): RedirectResponse
@@ -58,12 +59,7 @@ class TransactionController extends Controller
             403
         );
 
-        $transactions = Transaction::forRole(Auth::user())
-            ->latest('tanggal_transfer')
-            ->get();
-
         return view('ledger.admin.transactions.edit', [
-            'transactions' => $transactions,
             'editing' => $transaction,
         ]);
     }

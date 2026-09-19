@@ -4,7 +4,8 @@
   <div class="app-shell">
     <x-sidebar brand-mark="A" role-label="Admin" dashboard-route="admin.dashboard" dashboard-label="Dashboard"
       dashboard-pattern="admin.dashboard" transactions-route="admin.transactions.create"
-      transactions-pattern="admin.transactions.*" />
+      transactions-pattern="admin.transactions.*" history-route="admin.transactions.history"
+      history-pattern="admin.transactions.history" />
     <main class="main">
       <div class="topbar">
         <div>
@@ -75,42 +76,10 @@
           </table>
         </div>
       </div>
-      <div class="card">
+      {{-- <div class="card">
         <div class="card-title">Detail Transaksi Anda</div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Bukti</th>
-                <th>Nama</th>
-                <th>Tgl Main</th>
-                <th>Jenis</th>
-                <th>Tgl Transfer</th>
-                <th>Nominal</th>
-                <th>Jam</th>
-                <th>Okupansi</th>
-                <th>Catatan</th>
-              </tr>
-            </thead>
-            <tbody>@forelse($transactions as $transaction)
-              <tr>
-                <td>@if($transaction->gambar_bukti)<a href="{{ asset('storage/' . $transaction->gambar_bukti) }}"
-                target="_blank">Lihat</a>@else-@endif</td>
-                <td>{{ $transaction->nama }}</td>
-                <td>{{ $transaction->tanggal_main->format('d M Y') }}</td>
-                <td>{{ $transaction->jenis_transfer }}</td>
-                <td>{{ $transaction->tanggal_transfer->format('d M Y') }}</td>
-                <td class="mono">Rp {{ number_format($transaction->nominal, 0, ',', '.') }}</td>
-                <td>{{ $transaction->jam_mulai }} - {{ $transaction->jam_selesai }}</td>
-                <td>{{ number_format($transaction->okupansi_jam, 2, ',', '.') }} jam</td>
-                <td>{{ $transaction->catatan ?: '-' }}</td>
-            </tr>@empty<tr>
-                <td colspan="9">Belum ada transaksi.</td>
-              </tr>@endforelse
-            </tbody>
-          </table>
-        </div>
-      </div>
+        <x-transaction-table :transactions="$transactions" :actions="false" />
+      </div> --}}
     </main>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
