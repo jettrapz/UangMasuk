@@ -127,29 +127,23 @@ textarea {
 }
 
 .sidebar {
-  /* Fix posisi agar tidak ikut scroll halaman utama */
   position: fixed;
   top: 0;
   left: 0;
   width: 260px;
-  /* Tentukan lebar pasti sidebar */
   height: 100vh;
-  /* Memenuhi tinggi layar penuh */
   z-index: 20;
-
-  /* Agar padding tidak menambah ukuran luar elemen */
   box-sizing: border-box;
-
-  /* Layout Flexbox Vertikal */
   background: var(--surface);
   border-right: 1px solid var(--border-soft);
   padding: 22px 18px;
   display: flex;
   flex-direction: column;
   gap: 26px;
-
-  /* Scroll internal jika menu sangat banyak di layar kecil */
+  overflow-x: hidden;
   overflow-y: auto;
+  white-space: nowrap;
+  transition: width .22s ease, padding .22s ease, transform .22s ease;
 }
 
 .brand {
@@ -185,6 +179,59 @@ textarea {
   letter-spacing: .08em;
 }
 
+.sidebar-toggle {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  margin-left: auto;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  background: var(--surface-3);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, .18);
+}
+
+.sidebar-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.sidebar-toggle:hover {
+  background: var(--surface-2);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.sidebar-toggle-icon {
+  display: inline-flex;
+}
+
+.sidebar-toggle-icon--open {
+  display: none;
+}
+
+.sidebar-collapsed .sidebar-toggle-icon--close {
+  display: none;
+}
+
+.sidebar-collapsed .sidebar-toggle-icon--open {
+  display: inline-flex;
+}
+
+.main {
+  transition: margin-left .22s ease, width .22s ease;
+}
+
+.sidebar-collapsed .main {
+  margin-left: 72px;
+  width: calc(100% - 72px);
+}
+
 .nav-group-label {
   font-size: 11px;
   text-transform: uppercase;
@@ -217,6 +264,37 @@ textarea {
   height: 16px;
   flex: none;
   opacity: .85;
+}
+
+.sidebar-collapsed .sidebar {
+  width: 72px;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.sidebar-collapsed .brand {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.sidebar-collapsed .brand-text,
+.sidebar-collapsed .nav-group-label,
+.sidebar-collapsed .nav-label {
+  display: none !important;
+}
+
+.sidebar-collapsed .sidebar-toggle {
+  position: static;
+  margin: 0;
+}
+
+.sidebar-collapsed .nav a,
+.sidebar-collapsed .sidebar-foot .btn {
+  justify-content: center;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 .nav a:hover {
@@ -303,6 +381,12 @@ textarea {
   transition: transform .12s ease, border-color .12s ease, background .12s ease;
 }
 
+.btn svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
 .btn:hover {
   border-color: var(--text-faint);
 }
@@ -336,6 +420,10 @@ textarea {
   background: transparent;
 }
 
+.btn-icon-edit {
+  color: var(--teal);
+}
+
 .btn-danger {
   background: transparent;
   color: var(--red);
@@ -344,6 +432,57 @@ textarea {
 
 .btn-danger:hover {
   background: var(--red-dim);
+}
+
+.confirm-modal {
+  width: min(420px, calc(100% - 32px));
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-lift);
+}
+
+.confirm-modal::backdrop {
+  background: rgba(8, 11, 15, .75);
+}
+
+.confirm-modal-content {
+  padding: 22px;
+}
+
+.confirm-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.confirm-modal h2 {
+  font-size: 18px;
+}
+
+.confirm-modal p {
+  color: var(--text-dim);
+  font-size: 13.5px;
+}
+
+.modal-close {
+  border: 0;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 22px;
 }
 
 .btn-sm {
@@ -1096,12 +1235,38 @@ tbody tr:hover {
     height: auto;
     max-height: none;
     z-index: 20;
+    transform: none;
   }
 
-  .main {
+  .main,
+  .sidebar-collapsed .main {
     margin-left: 0;
     width: 100%;
     max-width: none;
     padding: 22px 18px 48px;
+  }
+
+  .sidebar-collapsed .sidebar {
+    width: 100%;
+    padding: 22px 18px;
+  }
+
+  .sidebar-collapsed .brand {
+    flex-direction: row;
+  }
+
+  .sidebar-collapsed .brand-text,
+  .sidebar-collapsed .nav-group-label,
+  .sidebar-collapsed .nav-label {
+    display: block !important;
+  }
+
+  .sidebar-collapsed .nav a,
+  .sidebar-collapsed .sidebar-foot .btn {
+    justify-content: flex-start;
+  }
+
+  .sidebar-toggle {
+    display: inline-flex;
   }
 }

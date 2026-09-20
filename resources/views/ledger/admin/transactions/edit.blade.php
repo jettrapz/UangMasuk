@@ -13,10 +13,10 @@
           <h1>Edit Transaksi</h1>
           <p class="sub">Perbarui data transaksi.</p>
         </div>
-        <div class="topbar-actions">
+        {{-- <div class="topbar-actions">
           <a class="btn btn-teal" href="{{ route('admin.transactions.history') }}">Riwayat</a>
           <a class="btn btn-ghost btn-sm" href="{{ route('admin.dashboard') }}">Dashboard</a>
-        </div>
+        </div> --}}
       </div>
       @if(session('success'))<x-alert type="success" :message="session('success')" />@endif
       @if($errors->any())<x-alert type="error" :message="$errors->first()" />@endif

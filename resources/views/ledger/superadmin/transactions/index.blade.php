@@ -13,10 +13,10 @@
           <h1>Input Transaksi</h1>
           <p class="sub">Catat transaksi baru — lihat riwayat di tab Riwayat Transaksi.</p>
         </div>
-        <div class="topbar-actions">
+        {{-- <div class="topbar-actions">
           <a class="btn btn-teal" href="{{ route('superadmin.transactions.history') }}">Riwayat</a>
           <a class="btn btn-ghost btn-sm" href="{{ route('superadmin') }}">Dashboard</a>
-        </div>
+        </div> --}}
       </div>
       <div class="card">
         <div class="card-title">Form Transaksi</div>
