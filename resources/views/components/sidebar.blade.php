@@ -48,13 +48,30 @@
   </nav>
 
   <div class="sidebar-foot">
-    <form method="POST" action="{{ route('logout') }}">
-      @csrf
-      <button class="btn btn-ghost btn-sm" style="width:100%;">
-        <x-icon name="heroicon-o-arrow-left-on-rectangle" aria-hidden="true" />
-        <span class="nav-label">Keluar</span>
-      </button>
-    </form>
+    <!-- Tombol Pemicu Modal Logout -->
+    <button class="btn btn-ghost btn-sm" style="width:100%;" type="button" data-modal-open="logout-modal"
+      aria-label="Keluar dari sistem">
+      <x-icon name="heroicon-o-arrow-left-on-rectangle" aria-hidden="true" />
+      <span class="nav-label">Keluar</span>
+    </button>
+
+    <!-- Modal Konfirmasi Logout -->
+    <dialog class="confirm-modal" id="logout-modal">
+      <div class="confirm-modal-content">
+        <div class="confirm-modal-header">
+          <h2>Konfirmasi Keluar</h2>
+          <button class="modal-close" type="button" data-modal-close aria-label="Tutup">&times;</button>
+        </div>
+        <p>Apakah Anda yakin ingin keluar dari sesi ini?</p>
+        <div class="confirm-modal-actions">
+          <button class="btn btn-ghost btn-sm" type="button" data-modal-close>Batal</button>
+          <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button class="btn btn-danger btn-sm" type="submit">Ya, Keluar</button>
+          </form>
+        </div>
+      </div>
+    </dialog>
   </div>
 </aside>
 

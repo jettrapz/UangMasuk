@@ -146,7 +146,7 @@
     }
 </style>
 
-<script>
+{{-- <script>
     document.querySelectorAll('[data-modal-open]').forEach((button) => {
         button.addEventListener('click', () => {
             document.getElementById(button.dataset.modalOpen)?.showModal();
@@ -166,4 +166,4 @@
             }
         });
     });
-</script>
+</script> --}}
