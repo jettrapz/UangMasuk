@@ -18,6 +18,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin', [AdminTransactionController::class, 'index'])->name('admin');
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/admin/export', [LedgerController::class, 'export'])->name('admin.export');
+    Route::get('/admin/transactions/history', [AdminTransactionController::class, 'history'])->name('admin.transactions.history');
     Route::get('/admin/transactions/create', [AdminTransactionController::class, 'create'])->name('admin.transactions.create');
     Route::post('/admin/transactions', [AdminTransactionController::class, 'store'])->name('admin.transactions.store');
     Route::get('/admin/transactions/{transaction}/edit', [AdminTransactionController::class, 'edit'])->name('admin.transactions.edit');
@@ -27,6 +28,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
 Route::middleware(['auth', 'role:superadmin'])->group(function () {
     Route::get('/superadmin', [SuperAdminDashboardController::class, 'index'])->name('superadmin');
+    Route::get('/superadmin/transactions/history', [SuperAdminTransactionController::class, 'history'])->name('superadmin.transactions.history');
     Route::get('/superadmin/transactions/create', [SuperAdminTransactionController::class, 'create'])->name('superadmin.transactions.create');
     Route::post('/superadmin/transactions', [SuperAdminTransactionController::class, 'store'])->name('superadmin.transactions.store');
     Route::get('/superadmin/transactions/{transaction}/edit', [SuperAdminTransactionController::class, 'edit'])->name('superadmin.transactions.edit');
