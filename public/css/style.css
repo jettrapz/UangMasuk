@@ -150,6 +150,7 @@ textarea {
   display: flex;
   align-items: center;
   gap: 10px;
+  width: 100%;
 }
 
 .brand-mark {
@@ -170,6 +171,9 @@ textarea {
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 15px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .brand-text .role {
@@ -177,6 +181,20 @@ textarea {
   color: var(--text-dim);
   text-transform: uppercase;
   letter-spacing: .08em;
+}
+
+.brand-text .role,
+.brand-text,
+name {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  max-width: 100%;
 }
 
 .sidebar-toggle {
@@ -1268,5 +1286,7 @@ tbody tr:hover {
 
   .sidebar-toggle {
     display: inline-flex;
+    flex-shrink: 0;
+    z-index: 2;
   }
 }
