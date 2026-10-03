@@ -8,8 +8,8 @@ use App\Models\Transaction;
 use App\Services\TransactionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class TransactionController extends Controller
 {
@@ -28,30 +28,43 @@ class TransactionController extends Controller
     public function index(Request $request): View
     {
         $editing = null;
+
         return view('ledger.transactions.create', compact('editing'));
     }
 
+    // public function history(): View
+    // {
+    //     $transactions = Transaction::forRole(Auth::user())->latest('tanggal_transfer')->get();
+    //     return view('ledger.transactions.history', compact('transactions'));
+    // }
+
     public function history(): View
     {
-        $transactions = Transaction::forRole(Auth::user())->latest('tanggal_transfer')->get();
+        $transactions = Transaction::forRole(Auth::user())
+            ->latest('tanggal_transfer')
+            ->paginate(10);
+
         return view('ledger.transactions.history', compact('transactions'));
     }
 
     public function create(): View
     {
         $editing = null;
+
         return view('ledger.transactions.create', compact('editing'));
     }
 
     public function store(StoreTransactionRequest $request): RedirectResponse
     {
         $this->transactionService->create($request->validated());
-        return redirect()->route($this->routePrefix() . '.transactions.create')->with('success', 'Transaksi berhasil disimpan.');
+
+        return redirect()->route($this->routePrefix().'.transactions.create')->with('success', 'Transaksi berhasil disimpan.');
     }
 
     public function edit(Transaction $transaction): View
     {
         abort_unless(Auth::user()->role === 'superadmin' || $transaction->created_by === Auth::id(), 403);
+
         return view('ledger.transactions.edit', ['editing' => $transaction]);
     }
 
@@ -59,13 +72,15 @@ class TransactionController extends Controller
     {
         abort_unless(Auth::user()->role === 'superadmin' || $transaction->created_by === Auth::id(), 403);
         $this->transactionService->update($transaction, $request->validated());
-        return redirect()->route($this->routePrefix() . '.transactions.create')->with('success', 'Transaksi berhasil diperbarui.');
+
+        return redirect()->route($this->routePrefix().'.transactions.create')->with('success', 'Transaksi berhasil diperbarui.');
     }
 
     public function destroy(Transaction $transaction): RedirectResponse
     {
         abort_unless(Auth::user()->role === 'superadmin' || $transaction->created_by === Auth::id(), 403);
         $this->transactionService->delete($transaction);
+
         return back()->with('success', 'Transaksi berhasil dihapus.');
     }
 }

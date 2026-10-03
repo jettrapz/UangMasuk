@@ -15,12 +15,33 @@
     $deleteRoute = $isSuper ? 'superadmin.transactions.destroy' : 'admin.transactions.destroy';
   @endphp
   <div class="app-shell">
-    <x-sidebar :brand-mark="$brandMark" :role-label="$roleLabel" :dashboard-route="$dashRoute" :dashboard-label="$isSuper ? 'Dashboard Super Admin' : 'Dashboard'" :dashboard-pattern="$dashPattern" :transactions-route="$txCreate" :transactions-pattern="$txPattern" :history-route="$histRoute" :history-pattern="$histPattern" />
+    <x-sidebar :brand-mark="$brandMark" :role-label="$roleLabel" :dashboard-route="$dashRoute"
+      :dashboard-label="$isSuper ? 'Dashboard Super Admin' : 'Dashboard'" :dashboard-pattern="$dashPattern"
+      :transactions-route="$txCreate" :transactions-pattern="$txPattern" :history-route="$histRoute"
+      :history-pattern="$histPattern" />
     <main class="main">
-      <div class="topbar"><div><div class="eyebrow">{{ $roleLabel }}</div><h1>Riwayat Transaksi</h1><p class="sub">{{ $isSuper ? 'Daftar seluruh transaksi — kelola via aksi Edit/Hapus.' : 'Daftar transaksi milik Anda — kelola via aksi Edit/Hapus.' }}</p></div></div>
+      <div class="topbar">
+        <div>
+          <div class="eyebrow">{{ $roleLabel }}</div>
+          <h1>Riwayat Transaksi</h1>
+          <p class="sub">
+            {{ $isSuper ? 'Daftar seluruh transaksi — kelola via aksi Edit/Hapus.' : 'Daftar transaksi milik Anda — kelola via aksi Edit/Hapus.' }}
+          </p>
+        </div>
+      </div>
       @if(session('success'))<x-alert type="success" :message="session('success')" />@endif
       @if($errors->any())<x-alert type="error" :message="$errors->first()" />@endif
-      <div class="card"><div class="card-title">Riwayat Transaksi</div><x-transaction-table :transactions="$transactions" :actions="true" :edit-route="$editRoute" :delete-route="$deleteRoute" /></div>
+
+      <div class="card">
+        <div class="card-title">Riwayat Transaksi</div>
+        <x-transaction-table :transactions="$transactions" :actions="true" :edit-route="$editRoute"
+          :delete-route="$deleteRoute" />
+
+        {{-- Tambahkan navigasi pagination di bawah tabel --}}
+        <div class="mt-4">
+          {{ $transactions->links() }}
+        </div>
+      </div>
     </main>
   </div>
 @endsection
