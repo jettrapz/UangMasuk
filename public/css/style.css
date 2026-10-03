@@ -150,6 +150,7 @@ textarea {
   display: flex;
   align-items: center;
   gap: 10px;
+  width: 100%;
 }
 
 .brand-mark {
@@ -170,6 +171,9 @@ textarea {
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 15px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .brand-text .role {
@@ -177,6 +181,20 @@ textarea {
   color: var(--text-dim);
   text-transform: uppercase;
   letter-spacing: .08em;
+}
+
+.brand-text .role,
+.brand-text,
+name {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  max-width: 100%;
 }
 
 .sidebar-toggle {
@@ -428,6 +446,49 @@ textarea {
   background: transparent;
   color: var(--red);
   border-color: var(--red-dim);
+}
+
+/* ---------- Pagination ---------- */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+.pagination__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background .12s ease, border-color .12s ease, color .12s ease;
+}
+
+.pagination__link:not(.pagination__link--disabled):not(.pagination__link--active):hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pagination__link--active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.pagination__link--disabled {
+  cursor: not-allowed;
+  opacity: .45;
 }
 
 .btn-danger:hover {
@@ -1268,5 +1329,7 @@ tbody tr:hover {
 
   .sidebar-toggle {
     display: inline-flex;
+    flex-shrink: 0;
+    z-index: 2;
   }
 }

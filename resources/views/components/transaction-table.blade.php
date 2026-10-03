@@ -22,11 +22,9 @@
                         @if($transaction->gambar_bukti)
                             {{-- Thumbnail Gambar --}}
                             <div class="bukti-thumbnail-wrap">
-                                <img src="{{ asset('storage/' . $transaction->gambar_bukti) }}" 
-                                     alt="Bukti Transfer {{ $transaction->nama }}" 
-                                     class="bukti-img-thumb"
-                                     data-modal-open="preview-bukti-{{ $transaction->getKey() }}"
-                                     title="Klik untuk memperbesar">
+                                <img src="{{ asset('storage/' . $transaction->gambar_bukti) }}"
+                                    alt="Bukti Transfer {{ $transaction->nama }}" class="bukti-img-thumb"
+                                    data-modal-open="preview-bukti-{{ $transaction->getKey() }}" title="Klik untuk memperbesar">
                             </div>
 
                             {{-- Modal Preview Ukuran Penuh --}}
@@ -34,15 +32,16 @@
                                 <div class="confirm-modal-content image-modal-content">
                                     <div class="confirm-modal-header">
                                         <h2>Bukti Transfer - {{ $transaction->nama }}</h2>
-                                        <button class="modal-close" type="button" data-modal-close aria-label="Tutup">&times;</button>
+                                        <button class="modal-close" type="button" data-modal-close
+                                            aria-label="Tutup">&times;</button>
                                     </div>
                                     <div class="modal-image-body">
-                                        <img src="{{ asset('storage/' . $transaction->gambar_bukti) }}" 
-                                             alt="Bukti Transfer {{ $transaction->nama }}" 
-                                             class="full-preview-img">
+                                        <img src="{{ asset('storage/' . $transaction->gambar_bukti) }}"
+                                            alt="Bukti Transfer {{ $transaction->nama }}" class="full-preview-img">
                                     </div>
                                     <div class="confirm-modal-actions" style="justify-content: space-between;">
-                                        <a href="{{ asset('storage/' . $transaction->gambar_bukti) }}" target="_blank" class="btn btn-ghost btn-sm">Buka Tab Baru</a>
+                                        <a href="{{ asset('storage/' . $transaction->gambar_bukti) }}" target="_blank"
+                                            class="btn btn-ghost btn-sm">Buka Tab Baru</a>
                                         <button class="btn btn-teal btn-sm" type="button" data-modal-close>Tutup</button>
                                     </div>
                                 </div>
@@ -145,25 +144,3 @@
         object-fit: contain;
     }
 </style>
-
-<script>
-    document.querySelectorAll('[data-modal-open]').forEach((button) => {
-        button.addEventListener('click', () => {
-            document.getElementById(button.dataset.modalOpen)?.showModal();
-        });
-    });
-
-    document.querySelectorAll('[data-modal-close]').forEach((button) => {
-        button.addEventListener('click', () => {
-            button.closest('dialog')?.close();
-        });
-    });
-
-    document.querySelectorAll('.confirm-modal').forEach((modal) => {
-        modal.addEventListener('click', (event) => {
-            if (event.target === modal) {
-                modal.close();
-            }
-        });
-    });
-</script>

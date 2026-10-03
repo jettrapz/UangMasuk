@@ -28,13 +28,15 @@ class LedgerLoginController extends Controller
 
             $user = Auth::user();
 
-            if ($user->role === 'admin') {
-                return redirect()->intended('/admin');
+            if ($user->role === 'superadmin') {
+                return redirect()->route('superadmin');
             }
 
-            if ($user->role === 'superadmin') {
-                return redirect()->intended('/superadmin');
+            if ($user->role === 'admin') {
+                return redirect()->route('admin.dashboard');
             }
+
+            return redirect()->route('superadmin');
         }
 
         return back()->withErrors([
