@@ -1,16 +1,15 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Http\Requests\Transaction\StoreTransactionRequest;
 use App\Http\Requests\Transaction\UpdateTransactionRequest;
 use App\Models\Transaction;
 use App\Services\TransactionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class TransactionController extends Controller
 {
@@ -21,69 +20,65 @@ class TransactionController extends Controller
         $this->transactionService = $transactionService;
     }
 
+    private function routePrefix(): string
+    {
+        return Auth::user()->role === 'superadmin' ? 'superadmin' : 'admin';
+    }
+
     public function index(Request $request): View
     {
         $editing = null;
 
-        return view('ledger.admin.transactions.create', compact('editing'));
+        return view('ledger.transactions.create', compact('editing'));
     }
+
+    // public function history(): View
+    // {
+    //     $transactions = Transaction::forRole(Auth::user())->latest('tanggal_transfer')->get();
+    //     return view('ledger.transactions.history', compact('transactions'));
+    // }
 
     public function history(): View
     {
         $transactions = Transaction::forRole(Auth::user())
             ->latest('tanggal_transfer')
-            ->get();
+            ->paginate(10);
 
-        return view('ledger.admin.transactions.history', compact('transactions'));
+        return view('ledger.transactions.history', compact('transactions'));
     }
 
     public function create(): View
     {
         $editing = null;
 
-        return view('ledger.admin.transactions.create', compact('editing'));
+        return view('ledger.transactions.create', compact('editing'));
     }
 
     public function store(StoreTransactionRequest $request): RedirectResponse
     {
         $this->transactionService->create($request->validated());
 
-        return redirect()->route('admin.transactions.create')
-            ->with('success', 'Transaksi berhasil disimpan.');
+        return redirect()->route($this->routePrefix().'.transactions.create')->with('success', 'Transaksi berhasil disimpan.');
     }
 
     public function edit(Transaction $transaction): View
     {
-        abort_unless(
-            Auth::user()->role === 'superadmin' || $transaction->created_by === Auth::id(),
-            403
-        );
+        abort_unless(Auth::user()->role === 'superadmin' || $transaction->created_by === Auth::id(), 403);
 
-        return view('ledger.admin.transactions.edit', [
-            'editing' => $transaction,
-        ]);
+        return view('ledger.transactions.edit', ['editing' => $transaction]);
     }
 
     public function update(UpdateTransactionRequest $request, Transaction $transaction): RedirectResponse
     {
-        abort_unless(
-            Auth::user()->role === 'superadmin' || $transaction->created_by === Auth::id(),
-            403
-        );
-
+        abort_unless(Auth::user()->role === 'superadmin' || $transaction->created_by === Auth::id(), 403);
         $this->transactionService->update($transaction, $request->validated());
 
-        return redirect()->route('admin.transactions.create')
-            ->with('success', 'Transaksi berhasil diperbarui.');
+        return redirect()->route($this->routePrefix().'.transactions.create')->with('success', 'Transaksi berhasil diperbarui.');
     }
 
     public function destroy(Transaction $transaction): RedirectResponse
     {
-        abort_unless(
-            Auth::user()->role === 'superadmin' || $transaction->created_by === Auth::id(),
-            403
-        );
-
+        abort_unless(Auth::user()->role === 'superadmin' || $transaction->created_by === Auth::id(), 403);
         $this->transactionService->delete($transaction);
 
         return back()->with('success', 'Transaksi berhasil dihapus.');
